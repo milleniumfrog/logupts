@@ -14,7 +14,7 @@
     "type": "git",
     "url": "ssh://git@milleniumfrog.de/~/repos/logts"
   },
-  "type": "./dist/logupts.d.ts",
+  "types": "./dist/logupts.d.ts",
   "author": "Schwarzinger René <web@milleniumfrog.de>",
   "license": "MIT",
   "devDependencies": {
