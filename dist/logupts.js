@@ -9,6 +9,26 @@
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var Runtime;
+    (function (Runtime) {
+        Runtime[Runtime["commonjs"] = 0] = "commonjs";
+        Runtime[Runtime["amd"] = 1] = "amd";
+        Runtime[Runtime["default"] = 2] = "default";
+    })(Runtime || (Runtime = {}));
+    let runtime = (typeof module === 'object' && typeof module.exports === "object") ?
+        Runtime.commonjs :
+        (typeof define === "function" && define.amd) ?
+            Runtime.amd :
+            Runtime.default;
+    let fs, path;
+    if (runtime === Runtime.commonjs) {
+        fs = require('fs');
+        path = require('path');
+    }
+    else {
+        fs = (() => { });
+        path = (() => { });
+    }
     class LogUpTs {
         constructor(logOptions) {
             this.logOptions = {
@@ -16,7 +36,8 @@
                 praefix: '{{service(activeService)}} ',
                 postfix: '',
                 quiet: false,
-                logFiles: []
+                logFiles: [],
+                writeToFile: false
             };
             this.activeService = 'LOG';
             this.this = this;
@@ -97,7 +118,7 @@
                 this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
             if (!this.logOptions.quiet)
                 console.log(outPut);
-            if (runtime !== Runtime.commonjs)
+            if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
                 return outPut;
             let toPrint = ['ALL', 'LOG'];
             return this.genDirs.then(() => { return this.node_allFiles(toPrint, outPut); });
@@ -109,7 +130,7 @@
                 this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
             if (!this.logOptions.quiet)
                 console.error(outPut);
-            if (runtime !== Runtime.commonjs)
+            if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
                 return outPut;
             let toPrint = ['ALL', 'ERROR'];
             return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
@@ -117,11 +138,11 @@
         info(message, options) {
             this.activeService = 'INFO';
             let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) +
-                (message instanceof Error ? message.message : message) +
+                message +
                 this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
             if (!this.logOptions.quiet)
                 console.info(outPut);
-            if (runtime !== Runtime.commonjs)
+            if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
                 return outPut;
             let toPrint = ['ALL', 'INFO'];
             return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
@@ -129,11 +150,11 @@
         custom(praefix, postfix, message, options) {
             this.activeService = 'CUSTOM ';
             let outPut = this._generateStringOutOfPlaceholderString(praefix) +
-                (message instanceof Error ? message.message : message) +
+                message +
                 this._generateStringOutOfPlaceholderString(postfix);
             if (!this.logOptions.quiet)
                 console.info(outPut);
-            if (runtime !== Runtime.commonjs)
+            if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
                 return outPut;
             let toPrint = ['ALL', 'CUSTOM', praefix];
             return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
@@ -178,9 +199,11 @@
         node_generateLogDir(toGenPaths) {
             if (toGenPaths.length === 0)
                 return new Promise((resolve) => { resolve(); });
-            let pathSegments = toGenPaths[0].split(path.seg);
+            let pathSegments = toGenPaths[0].split(path.sep);
             let pathToCheck = '';
             for (let pathSegment of pathSegments) {
+                if (pathSegment === '/' || pathSegment === '')
+                    continue;
                 pathToCheck += '/' + pathSegment;
                 if (!fs.existsSync(pathToCheck)) {
                     fs.mkdirSync(pathToCheck);
@@ -191,26 +214,6 @@
         }
     }
     exports.LogUpTs = LogUpTs;
-    var Runtime;
-    (function (Runtime) {
-        Runtime[Runtime["commonjs"] = 0] = "commonjs";
-        Runtime[Runtime["amd"] = 1] = "amd";
-        Runtime[Runtime["default"] = 2] = "default";
-    })(Runtime || (Runtime = {}));
-    let runtime = (typeof module === 'object' && typeof module.exports === "object") ?
-        Runtime.commonjs :
-        (typeof define === "function" && define.amd) ?
-            Runtime.amd :
-            Runtime.default;
-    let fs, path;
-    if (runtime === Runtime.commonjs) {
-        fs = require('fs');
-        path = require('path');
-    }
-    else {
-        fs = (() => { throw new Error("try to read filesystem on client"); });
-        path = (() => { throw new Error("try to read Path on client"); });
-    }
     exports.Placeholders = {
         day: {
             key: 'day',

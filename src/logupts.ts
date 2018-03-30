@@ -1,7 +1,33 @@
 ///<amd-module name='logupts'/>
 
 declare let define: any;
+declare let module: any;
+declare let require: any;
 
+enum Runtime {
+    commonjs,
+    amd,
+    default
+}
+let runtime =
+    (typeof module === 'object' && typeof module.exports === "object") ?
+        Runtime.commonjs :
+        (typeof define === "function" && define.amd) ?
+            Runtime.amd :
+            Runtime.default;
+
+
+////////////////////////////////
+////// IMPORT //////////////////
+////////////////////////////////
+let fs: any, path: any;
+if (runtime === Runtime.commonjs) {
+    fs = require('fs');
+    path = require('path');
+} else {
+    fs = (() => {});
+    path = (() => {});
+}
 ////////////////////////////////
 ////// Interfaces //////////////
 ////////////////////////////////
@@ -23,7 +49,7 @@ export interface ILogUpTs {
     log: (msg: string, options?: ILogUpTsOptions) => string |  Promise<string> |  void;
     error: (msg: string, options?: ILogUpTsOptions) => string |  Promise<string>;
     info: (msg: string, options?: ILogUpTsOptions) => string |  Promise<string>;
-    custom: (praefix: string, postfix: string, message: string | Error, options?: ILogUpTsOptions, serviceName?: string) => string |  Promise<string>;
+    custom: (praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, serviceName?: string) => string |  Promise<string>;
 }
 
 /**
@@ -53,6 +79,7 @@ export interface ILogUpTsOptions {
     /** log to console or dont */
     quiet?: boolean;
     logFiles?: Array<IPaths>;
+    writeToFile: boolean;
 }
 
 
@@ -76,7 +103,8 @@ export class LogUpTs implements ILogUpTs {
             praefix: '{{service(activeService)}} ',
             postfix: '',
             quiet: false,
-            logFiles: []
+            logFiles: [],
+            writeToFile: false
         }
         this.activeService = 'LOG';
         this.this = this;
@@ -195,7 +223,7 @@ export class LogUpTs implements ILogUpTs {
         // log to console
         if (!this.logOptions.quiet)
             console.log(outPut);
-        if (runtime !== Runtime.commonjs)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
             return outPut;
         // nodejs Teil
         let toPrint = ['ALL', 'LOG'];
@@ -217,7 +245,7 @@ export class LogUpTs implements ILogUpTs {
         // log to console
         if (!this.logOptions.quiet)
             console.error(outPut);
-        if (runtime !== Runtime.commonjs)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
             return outPut;
         // nodejs Teil
         let toPrint = ['ALL', 'ERROR'];
@@ -232,15 +260,15 @@ export class LogUpTs implements ILogUpTs {
  * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
  * @public
  */
-    info(message: string | Error, options?: ILogUpTsOptions): string |  Promise<string> {
+    info(message: string, options?: ILogUpTsOptions): string |  Promise<string> {
         this.activeService = 'INFO'; // setze aktivenService auf Log
         let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) + // setze den String zusammen
-            (message instanceof Error ? message.message : message) +
+            message +
             this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
         // log to console
         if (!this.logOptions.quiet)
             console.info(outPut);
-        if (runtime !== Runtime.commonjs)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
             return outPut;
         // nodejs Teil
         let toPrint = ['ALL', 'INFO'];
@@ -254,16 +282,16 @@ export class LogUpTs implements ILogUpTs {
      * @param message {string} Deine Nachricht
      * @param logoptions 
      */
-    custom(praefix: string, postfix: string, message: string | Error, options?: ILogUpTsOptions): string |  Promise<string> {
+    custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions): string |  Promise<string> {
         this.activeService = 'CUSTOM '; // setze aktivenService auf Log
         let outPut = this._generateStringOutOfPlaceholderString(praefix) + // setze den String zusammen
-            (message instanceof Error ? message.message : message) +
+             message +
             this._generateStringOutOfPlaceholderString(postfix);
         // log to console
         if (!this.logOptions.quiet)
             console.info(outPut);
         // nodejs Teil
-        if (runtime !== Runtime.commonjs)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
             return outPut;
         let toPrint = ['ALL', 'CUSTOM', praefix];
         return this.genDirs.then(()=>this.node_allFiles(toPrint, outPut));
@@ -333,9 +361,10 @@ export class LogUpTs implements ILogUpTs {
     node_generateLogDir (toGenPaths: Array<string>): Promise<void> {
         if (toGenPaths.length === 0) 
             return new Promise((resolve) => {resolve();});
-        let pathSegments = toGenPaths[0].split(path.seg);
+        let pathSegments = toGenPaths[0].split(path.sep);
         let pathToCheck = '';
         for (let pathSegment of pathSegments) {
+            if (pathSegment === '/' || pathSegment === '') continue;
             pathToCheck += '/' + pathSegment;
             if (!fs.existsSync(pathToCheck)) {
                 fs.mkdirSync(pathToCheck);
@@ -347,29 +376,6 @@ export class LogUpTs implements ILogUpTs {
 
 }
 
-enum Runtime {
-    commonjs,
-    amd,
-    default
-}
-let runtime =
-    (typeof module === 'object' && typeof module.exports === "object") ?
-        Runtime.commonjs :
-        (typeof define === "function" && define.amd) ?
-            Runtime.amd :
-            Runtime.default;
-
-////////////////////////////////
-////// IMPORT //////////////////
-////////////////////////////////
-let fs: any, path: any;
-if (runtime === Runtime.commonjs) {
-    fs = require('fs');
-    path = require('path');
-} else {
-    fs = (() => { throw new Error("try to read filesystem on client") });
-    path = (() => { throw new Error("try to read Path on client") });
-}
 /**
  * Die Logts Klasse, logge mit einem Variablen Praefix und Postfix, speichere deinen Log in nodejs in einer Datei
  * Bietet die Service: 

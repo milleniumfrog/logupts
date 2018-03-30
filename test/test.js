@@ -35,13 +35,7 @@ function test(LogUpTs, Placeholders, path, expect) {
             expect((new LogUpTs())._generateStringOutOfPlaceholderString('{{frog}}::{{frog}}::{{service(activeService)}}')).to.equal('milleniumfrog::milleniumfrog::[LOG]');
         });
         it('füge Einstellungen zusammen', () => {
-            expect(JSON.stringify((new LogUpTs()).logOptions)).to.equal(JSON.stringify({
-                placeholders: Placeholders,
-                praefix: '{{service(activeService)}} ',
-                postfix: '',
-                quiet: false,
-                logFiles: []
-            }));
+            expect(JSON.stringify((new LogUpTs()).logOptions)).to.equal(JSON.stringify({"placeholders":{"day":{"key":"day","replacer":"30"},"month":{"key":"month","replacer":"03"},"year":{"key":"year","replacer":"2018"},"service":{"key":"service"},"frog":{"key":"frog","replacer":"milleniumfrog"}},"praefix":"{{service(activeService)}} ","postfix":"","quiet":false,"logFiles":[],"writeToFile":false}));
             let log = new LogUpTs({
                 placeholders: Placeholders,
                 praefix: '{{service(activeService)}} {{day}} ',
@@ -52,10 +46,12 @@ function test(LogUpTs, Placeholders, path, expect) {
         })
     });
     if (runtime === 'commonjs') {
-        describe('Nodejs only', () => {
+        // 
+        describe('Nodejs only with saving in files', () => {
             it('log hello world', () => {
                 return (new LogUpTs({
-                    // quiet: true,
+                    quiet: true,
+                    writeToFile: true,
                     logFiles: [
                         {
                             identifier: "test",
@@ -75,9 +71,48 @@ function test(LogUpTs, Placeholders, path, expect) {
                         expect(finalString).to.equal('[LOG] hello world');
                     })
             })
+            it ('complexer log', () => {
+                let log = new LogUpTs({
+                    quiet: true,
+                    writeToFile: true,
+                    logFiles: [{
+                        identifier: 'infos',
+                        path: path.resolve(__dirname, '../log/info'),
+                        fileName: 'info.log',
+                        serviceToLog: ['INFO']
+                    },
+                    {
+                        identifier: 'log',
+                        path: path.resolve(__dirname, '../log/log'),
+                        fileName: 'log.log',
+                        serviceToLog: ['LOG']
+                    },
+                    {
+                        identifier: 'all',
+                        path: path.resolve(__dirname, '../log/all'),
+                        fileName: 'all.log',
+                        serviceToLog: ['ALL']
+                    }]
+                });
+                
+                return log.log('das ist ein Log')
+                    .then(() => {
+                        return log.info('das ist eine Info')
+                    })
+                    .then(() => {
+                        return log.error('das ist ein Fehler')
+                    })
+                    .then(() => {
+                        return log.error(new Error('this is a error'));
+                    })
+                    .then(() => {
+                        return log.custom('[PING] ', '', 'a custom message')
+                    })
+            })
         })
     }
     else { 
+        // Client tests
         let quietOption = {
             quiet: true
         }

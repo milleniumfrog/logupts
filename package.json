@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "ssh://git@milleniumfrog.de/~/repos/logts"
+    "url": "https://github.com/milleniumfrog/logupts"
   },
   "types": "./dist/logupts.d.ts",
   "author": "Schwarzinger René <web@milleniumfrog.de>",

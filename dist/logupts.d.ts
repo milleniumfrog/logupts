@@ -10,7 +10,7 @@ export interface ILogUpTs {
     log: (msg: string, options?: ILogUpTsOptions) => string | Promise<string> | void;
     error: (msg: string, options?: ILogUpTsOptions) => string | Promise<string>;
     info: (msg: string, options?: ILogUpTsOptions) => string | Promise<string>;
-    custom: (praefix: string, postfix: string, message: string | Error, options?: ILogUpTsOptions, serviceName?: string) => string | Promise<string>;
+    custom: (praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, serviceName?: string) => string | Promise<string>;
 }
 export interface IPaths {
     identifier: string;
@@ -26,6 +26,7 @@ export interface ILogUpTsOptions {
     placeholders?: IPlaceholders;
     quiet?: boolean;
     logFiles?: Array<IPaths>;
+    writeToFile: boolean;
 }
 export declare class LogUpTs implements ILogUpTs {
     logOptions: ILogUpTsOptions;
@@ -38,8 +39,8 @@ export declare class LogUpTs implements ILogUpTs {
     _mergeObjects(currentObj: any, toAddObj: any): any;
     log(message: string, options?: ILogUpTsOptions): string | Promise<string> | void;
     error(message: string | Error, options?: ILogUpTsOptions): string | Promise<string>;
-    info(message: string | Error, options?: ILogUpTsOptions): string | Promise<string>;
-    custom(praefix: string, postfix: string, message: string | Error, options?: ILogUpTsOptions): string | Promise<string>;
+    info(message: string, options?: ILogUpTsOptions): string | Promise<string>;
+    custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions): string | Promise<string>;
     node_allFiles(servicesToLog: Array<string>, message: string, depth?: number): Promise<string>;
     node_writeToFS(absolutePath: string, fileName: string, message: string): Promise<void>;
     node_generateLogDir(toGenPaths: Array<string>): Promise<void>;
