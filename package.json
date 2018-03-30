@@ -1,0 +1,28 @@
+{
+  "name": "logupts",
+  "version": "1.0.0",
+  "description": "LogUpTs is an extendable class, which logs your message with a generated prefix and postfix. The prefix and postfix strings have the possibility to add Placeholder that will be replaced when the script executes. For example, you log 'hello world' with the following prefix: '{{month}}:{{year}} {{service(activeService)}}'. The result would be '03:2018 [LOG] hello world'. In Nodejs you can also save your log to diffrent files.",
+  "main": "dist/logupts.js",
+  "sourceMaps": "./map",
+  "scripts": {
+    "test": "./shellscripts/cleanupdist.sh && tsc && mocha",
+    "build": "./shellscripts/cleanupdist.sh && tsc",
+    "buildAMD": "./shellscripts/cleanupdist.sh && tsc --module amd",
+    "buildDoc": "typedoc --out ./doc ./src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@milleniumfrog.de/~/repos/logts"
+  },
+  "type": "./dist/logupts.d.ts",
+  "author": "Schwarzinger René <web@milleniumfrog.de>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^9.4.4",
+    "chai": "^4.1.2",
+    "mocha": "^5.0.0",
+    "typedoc": "^0.11.1",
+    "typescript": "^2.7.1"
+  },
+  "dependencies": {}
+}
