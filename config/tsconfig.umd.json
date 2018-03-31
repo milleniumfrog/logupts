@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "outDir": "../dist/umd/",
+    "module": "amd",
+    "target": "es2015",
+    "sourceMap": true,
+    "declaration": true,
+    "removeComments": true
+  },
+  "include": [
+    "../src/"
+  ]
+}

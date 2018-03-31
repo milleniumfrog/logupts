@@ -7,44 +7,28 @@ let runtime =
             'default';
 
 if (runtime === 'commonjs') {
-    let LogUpTs = require('../dist/logupts').LogUpTs;
-    let chai = require('chai');
+    let LogUpTs = require('../dist/umd/logupts').LogUpTs;
+    let Placeholders = require('../dist/umd/logupts').Placeholders;
     let path = require('path');
-    let Placeholders = require('../dist/logupts').Placeholders;
+    let chai = require('chai');
     test(LogUpTs, Placeholders, path, chai.expect);
 } else if (runtime === 'amd') {
     require.config({
-        baseUrl: '.',
         paths: {
-            dist: '../dist',
             node: '../node_modules'
         }
     });
-    require(['logupts', 'node/chai/chai'], (index, chai) => {
-        console.log(index);
-        test(index.LogUpTs, index.Placeholders, { resolve: () => { return '' } }, chai.expect);
-    })
-} else  {
-    test(window.LogUpTs, window.Placeholders, { resolve: () => { return '' } }, chai.expect);
+    require(['', 'node/chai/chai'], (logupts, chai) => {
+        console.log(logupts);
+        console.log(chai);
+    });
+   
+} else {
+    test(window.LogUpTs, window.Placeholders, (() => {}), chai.expect);
 }
 
 // test function
 function test(LogUpTs, Placeholders, path, expect) {
-    describe('basic functions', () => {
-        it('ersetze platzhalterstring', () => {
-            expect((new LogUpTs())._generateStringOutOfPlaceholderString('{{frog}}::{{frog}}::{{service(activeService)}}')).to.equal('milleniumfrog::milleniumfrog::[LOG]');
-        });
-        it('füge Einstellungen zusammen', () => {
-            expect(JSON.stringify((new LogUpTs()).logOptions)).to.equal(JSON.stringify({"placeholders":{"day":{"key":"day","replacer":"30"},"month":{"key":"month","replacer":"03"},"year":{"key":"year","replacer":"2018"},"service":{"key":"service"},"frog":{"key":"frog","replacer":"milleniumfrog"}},"praefix":"{{service(activeService)}} ","postfix":"","quiet":false,"logFiles":[],"writeToFile":false}));
-            let log = new LogUpTs({
-                placeholders: Placeholders,
-                praefix: '{{service(activeService)}} {{day}} ',
-                postfix: '',
-                quiet: false
-            });
-            // expect(JSON.stringify(log.logOptions)).to.equal(JSON.stringify({ "placeholders": { "day": { "key": "day", "replacer": "29" }, "month": { "key": "month", "replacer": "03" }, "year": { "key": "year", "replacer": "2018" }, "service": { "key": "service" }, "frog": { "key": "frog", "replacer": "milleniumfrog" } }, "praefix": "{{service(activeService)}} ", "postfix": "", "quiet": false, "logFiles": [] }));
-        })
-    });
     if (runtime === 'commonjs') {
         // 
         describe('Nodejs only with saving in files', () => {
@@ -130,7 +114,6 @@ function test(LogUpTs, Placeholders, path, expect) {
                 expect((new LogUpTs(quietOption)).error('hello world')).to.equal('[ERROR] hello world');
             })
         });
-        mocha.checkLeaks();
         mocha.run();   
     }
 }

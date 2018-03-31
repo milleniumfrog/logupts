@@ -1,12 +1,4 @@
-(function (factory) {
-    if (typeof module === "object" && typeof module.exports === "object") {
-        var v = factory(require, exports);
-        if (v !== undefined) module.exports = v;
-    }
-    else if (typeof define === "function" && define.amd) {
-        define("logupts", ["require", "exports"], factory);
-    }
-})(function (require, exports) {
+define("logupts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Runtime;
@@ -14,7 +6,7 @@
         Runtime[Runtime["commonjs"] = 0] = "commonjs";
         Runtime[Runtime["amd"] = 1] = "amd";
         Runtime[Runtime["default"] = 2] = "default";
-    })(Runtime || (Runtime = {}));
+    })(Runtime = exports.Runtime || (exports.Runtime = {}));
     let runtime = (typeof module === 'object' && typeof module.exports === "object") ?
         Runtime.commonjs :
         (typeof define === "function" && define.amd) ?

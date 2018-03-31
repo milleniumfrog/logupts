@@ -4,7 +4,7 @@ declare let define: any;
 declare let module: any;
 declare let require: any;
 
-enum Runtime {
+export enum Runtime {
     commonjs,
     amd,
     default

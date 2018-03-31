@@ -1,3 +1,8 @@
+export declare enum Runtime {
+    commonjs = 0,
+    amd = 1,
+    default = 2,
+}
 export interface IPlaceholders {
     [index: string]: {
         replacer?: string;
