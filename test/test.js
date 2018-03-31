@@ -15,12 +15,12 @@ if (runtime === 'commonjs') {
 } else if (runtime === 'amd') {
     require.config({
         paths: {
-            node: '../node_modules'
+            node: '../node_modules',
+            umd: '../dist/umd'
         }
     });
-    require(['', 'node/chai/chai'], (logupts, chai) => {
-        console.log(logupts);
-        console.log(chai);
+    require(['umd/logupts', 'node/chai/chai'], (logupts, chai) => {
+        test(logupts.LogUpTs, logupts.Placeholders, (() => {}), chai.expect);
     });
    
 } else {

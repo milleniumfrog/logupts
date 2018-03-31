@@ -1,4 +1,3 @@
-///<amd-module name='logupts'/>
 
 declare let define: any;
 declare let module: any;

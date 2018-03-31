@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "../dist/umd/",
-    "module": "amd",
+    "module": "umd",
     "target": "es2015",
     "sourceMap": true,
     "declaration": true,
