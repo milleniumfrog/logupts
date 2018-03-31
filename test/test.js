@@ -16,10 +16,11 @@ if (runtime === 'commonjs') {
     require.config({
         paths: {
             node: '../node_modules',
-            umd: '../dist/umd'
+            umd: '../dist/umd',
+            cdn: 'https://dev.milleniumfrog.de/cdn/logupts/1.0.5/umd'
         }
     });
-    require(['umd/logupts', 'node/chai/chai'], (logupts, chai) => {
+    require(["cdn/logupts", 'node/chai/chai'], (logupts, chai) => {
         test(logupts.LogUpTs, logupts.Placeholders, (() => {}), chai.expect);
     });
    
