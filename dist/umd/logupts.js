@@ -153,7 +153,7 @@
                 message +
                 this._generateStringOutOfPlaceholderString(postfix);
             if (!this.logOptions.quiet)
-                console.info(outPut);
+                console.log(outPut);
             if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
                 return outPut;
             let toPrint = ['ALL', 'CUSTOM', praefix];

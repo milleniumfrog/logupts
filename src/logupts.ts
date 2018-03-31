@@ -288,7 +288,7 @@ export class LogUpTs implements ILogUpTs {
             this._generateStringOutOfPlaceholderString(postfix);
         // log to console
         if (!this.logOptions.quiet)
-            console.info(outPut);
+            console.log(outPut);
         // nodejs Teil
         if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
             return outPut;
