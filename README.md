@@ -1,20 +1,28 @@
 # LogUpTs 
 
-Version: 1.0.6
+Version: 1.0.8
 
 LogUpTs is an extendable class, which logs your message with a generated prefix and postfix. The prefix and postfix strings have the possibility to add Placeholder that will be replaced when the script executes. For example, you log 'hello world' with the following prefix: '{{month}}:{{year}} {{service()}}'. The result would be '03:2018 [LOG] hello world'.
-In Nodejs you can also save your log to diffrent files.
-# start with logupts
+In Nodejs you can also save your log to different files.
+
+- [install logupts](#install)
+- [setup](#setup)
+
+# install logupts <a name="install"></a>
 
 install it via npm 
 ```bash
 npm install --save logupts
 ```
-or use the cdns
-- https://dev.milleniumfrog.de/cdn/logupts/1.0.6/browser/logupts.js for including via \<script src=\"\"\>
-- https://dev.milleniumfrog.de/cdn/logupts/1.0.6/umd/logupts for including via AMD
-- https://dev.milleniumfrog.de/cdn/logupts/1.0.6/es2015/logupts.js for including as es2015 Module
-## [Nodejs](https://runkit.com/embed/kudu66eglz9n) 
+or use the following links
+- https://dev.milleniumfrog.de/cdn/logupts/1.0.8/browser/logupts.js for including via \<script src=\"\"\>
+- https://dev.milleniumfrog.de/cdn/logupts/1.0.8/umd/logupts for including via AMD
+- https://dev.milleniumfrog.de/cdn/logupts/1.0.8/es2015/logupts.js for including as es2015 Module
+
+# Setup LogUpTs <a name="setup"></a>
+
+## Nodejs
+
 ```javascript
 let LogUpTs = require('logupts').LogUpTs // import the LogUpTs class
 let logger = new LogUpTs(); // create your logger object
@@ -29,7 +37,7 @@ logger.custom("BSP ", "", "this is a custom message") // log a message with cust
 ## Browser
 ### Without module loader
 ```html
-<script src="https://dev.milleniumfrog.de/cdn/logupts/1.0.6/browser/logupts.js"></script>
+<script src="https://dev.milleniumfrog.de/cdn/logupts/1.0.8/browser/logupts.js"></script>
 ```
 ```javascript
 let logger = new logupts.LogUpTs();
@@ -45,7 +53,7 @@ logger.custom('[{{day}}] ', '', 'this is a custom message');
 ```javascript
 require.config({
     paths: {
-        cdn: 'https://dev.milleniumfrog.de/cdn/logupts/1.0.6/umd'
+        cdn: 'https://dev.milleniumfrog.de/cdn/logupts/1.0.8/umd'
     }
 });
 require(["cdn/logupts"], (logupts, chai) => {
@@ -66,7 +74,7 @@ index.html
 ```
 index.js
 ```javascript
-import { LogUpTs } from 'https://dev.milleniumfrog.de/cdn/logupts/1.0.6/es2015/logupts.js';
+import { LogUpTs } from 'https://dev.milleniumfrog.de/cdn/logupts/1.0.8/es2015/logupts.js';
 let logger = new LogUpTs(); // create your logger object
 logger.log("hello world") // log to console
 logger.info("this is an info") // log an info to console
@@ -75,11 +83,14 @@ logger.info("this is an info") // log an info to console
 
 [Click here for an expamle with AMD and ES2015 Module](http://plnkr.co/edit/PC4upgfoKlcXZHxYhdSx?p=info)
 
-## String Placeholders
-In the prefixes and postfixes, you can add placeholders that get replaced when you log your file. A Placeholder is surrounded by curly brackets like this {{placeholder}}.
-Actual Placeholder:
+## Placeholders
 
-(Date Placeholders)
+Placeholders are a predefined, but easy extendable, Group of words, which get replaced with predefined values or the returning value of a function. Placeholders are surrounded by double curly brackets. {{...}}
+A timestamp, for example, would be '{{day}}.{{month}}.{{fullYear}} {{hours}}:{{minutes}}', the result would be 01.04.2018 17:51. 
+
+The default Prefix is '{{service()}}'
+
+Timestamp placeholder
 - date
 - day
 - month
@@ -91,6 +102,9 @@ Actual Placeholder:
 (other Placeholders)
 - frog
 - service()
+
+internal placeholder variables
+- activeService
 
 ## write logfiles (nodejs and mac/linux only)
 When you create the logger Object you can setup your logfiles like this
