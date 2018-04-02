@@ -22,7 +22,7 @@ Placeholder.default = "this placeholder doesn´t supports no Function";
 let Placeholders = {
     date: new Placeholder('date', `${fillStrWithZeros(2, String((new Date()).getDate()))}`),
     day: new Placeholder('day', `${fillStrWithZeros(2, String((new Date()).getDay()))}`),
-    month: new Placeholder('month', `${fillStrWithZeros(2, String((new Date()).getMonth()))}`),
+    month: new Placeholder('month', `${fillStrWithZeros(2, String((new Date()).getMonth() + 1))}`),
     fullYear: new Placeholder('fullYear', `${(new Date()).getFullYear()}`),
     year: new Placeholder('year', `${(new Date()).getFullYear()}`),
     hours: new Placeholder('hours', `${fillStrWithZeros(2, String((new Date()).getHours()))}`),
