@@ -32,16 +32,18 @@
     Placeholder.default = "this placeholder doesn´t supports no Function";
     exports.Placeholder = Placeholder;
     exports.Placeholders = {
-        date: new Placeholder('date', `${(new Date()).getDate()}`),
-        day: new Placeholder('day', `${(new Date()).getDay()}`),
-        month: new Placeholder('month', `${(new Date()).getMonth()}`),
-        fullYear: new Placeholder('date', `${(new Date()).getFullYear()}`),
-        hours: new Placeholder('date', `${(new Date()).getHours()}`),
-        minutes: new Placeholder('date', `${(new Date()).getMinutes()}`),
-        seconds: new Placeholder('date', `${(new Date()).getSeconds()}`),
+        date: new Placeholder('date', `${fillStrWithZeros(2, String((new Date()).getDate()))}`),
+        day: new Placeholder('day', `${fillStrWithZeros(2, String((new Date()).getDay()))}`),
+        month: new Placeholder('month', `${fillStrWithZeros(2, String((new Date()).getMonth() + 1))}`),
+        fullYear: new Placeholder('fullYear', `${(new Date()).getFullYear()}`),
+        year: new Placeholder('year', `${(new Date()).getFullYear()}`),
+        hours: new Placeholder('hours', `${fillStrWithZeros(2, String((new Date()).getHours()))}`),
+        minutes: new Placeholder('minutes', `${fillStrWithZeros(2, String((new Date()).getMinutes()))}`),
+        seconds: new Placeholder('seconds', `${fillStrWithZeros(2, String((new Date()).getSeconds()))}`),
+        frog: new Placeholder('frog', 'milleniumfrog'),
         service: new Placeholder('service', ((placeholderVars) => {
             return `[${placeholderVars.activeService}]`;
-        }))
+        })),
     };
     function fillStrWithZeros(length, msg) {
         if (length < msg.length) {

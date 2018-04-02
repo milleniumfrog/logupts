@@ -42,6 +42,7 @@
                 postfix: '',
                 quiet: false,
                 logFiles: [],
+                writeToFile: false,
                 writeToFileSystem: false
             };
             this.placeholderVars.activeService = 'LOG';

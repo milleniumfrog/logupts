@@ -24,7 +24,11 @@ if (runtime === 'commonjs') {
     });
    
 } else {
-    test(window.LogUpTs,  (() => {}), chai.expect);
+    if (window.LogUpTs)
+        test(window.LogUpTs,  (() => {}), chai.expect);
+    else {
+        test(logupts.LogUpTs, (() => {}), chai.expect);
+    }
 }
 
 // test function
@@ -40,13 +44,13 @@ function test(LogUpTs, path, expect) {
                         {
                             identifier: "test",
                             path: path.resolve(__dirname, '../log/'),
-                            fileName: 'test_{{year}}.log',
+                            fileName: 'test_{{fullYear}}.log',
                             serviceToLog: ['ALL']
                         },
                         {
                             identifier: "test2",
                             path: path.resolve(__dirname, '../log/test2'),
-                            fileName: 'test2_{{year}}.log',
+                            fileName: 'test2_{{fullYear}}.log',
                             serviceToLog: ['LOG']
                         }
                     ]
@@ -111,7 +115,7 @@ function test(LogUpTs, path, expect) {
                 expect((new LogUpTs(quietOption)).error('hello world')).to.equal('[ERROR] hello world');
             })
             it ('custom', () => {
-                expect((new LogUpTs(quietOption)).error('hello world')).to.equal('[ERROR] hello world');
+                expect((new LogUpTs(quietOption)).custom('hello world', 'a log', ' i am ')).to.equal('hello world i am a log');
             })
         });
         mocha.run();   

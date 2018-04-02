@@ -102,6 +102,8 @@ export class LogUpTs implements ILogUpTs {
             postfix: '',
             quiet: false,
             logFiles: [],
+            /** @deprecated use writeToFileSystem instead */
+            writeToFile: false,
             writeToFileSystem: false
         }
         this.placeholderVars.activeService = 'LOG';
@@ -114,6 +116,7 @@ export class LogUpTs implements ILogUpTs {
         for (let logFile of this.logOptions.logFiles) {
             paths.push(logFile.path);
         }
+        // generate all files
         this.genDirs = this.node_generateLogDir(paths);
     };
 
