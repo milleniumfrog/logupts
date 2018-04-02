@@ -8,10 +8,9 @@ let runtime =
 
 if (runtime === 'commonjs') {
     let LogUpTs = require('../dist/umd/logupts').LogUpTs;
-    let Placeholders = require('../dist/umd/logupts').Placeholders;
     let path = require('path');
     let chai = require('chai');
-    test(LogUpTs, Placeholders, path, chai.expect);
+    test(LogUpTs,  path, chai.expect);
 } else if (runtime === 'amd') {
     require.config({
         paths: {
@@ -21,22 +20,22 @@ if (runtime === 'commonjs') {
         }
     });
     require(["cdn/logupts", 'node/chai/chai'], (logupts, chai) => {
-        test(logupts.LogUpTs, logupts.Placeholders, (() => {}), chai.expect);
+        test(logupts.LogUpTs, (() => {}), chai.expect);
     });
    
 } else {
-    test(window.LogUpTs, window.Placeholders, (() => {}), chai.expect);
+    test(window.LogUpTs,  (() => {}), chai.expect);
 }
 
 // test function
-function test(LogUpTs, Placeholders, path, expect) {
+function test(LogUpTs, path, expect) {
     if (runtime === 'commonjs') {
         // 
         describe('Nodejs only with saving in files', () => {
             it('log hello world', () => {
                 return (new LogUpTs({
                     quiet: true,
-                    writeToFile: true,
+                    writeToFileSystem: true,
                     logFiles: [
                         {
                             identifier: "test",
@@ -59,7 +58,7 @@ function test(LogUpTs, Placeholders, path, expect) {
             it ('complexer log', () => {
                 let log = new LogUpTs({
                     quiet: true,
-                    writeToFile: true,
+                    writeToFileSystem: true,
                     logFiles: [{
                         identifier: 'infos',
                         path: path.resolve(__dirname, '../log/info'),

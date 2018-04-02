@@ -1,4 +1,39 @@
-export var Runtime;
+class Placeholder {
+    constructor(key, replacerOrFn = "") {
+        this.key = key;
+        if (typeof replacerOrFn === 'string') {
+            this.replacer = replacerOrFn;
+            this.replacerFn = Placeholder.defaultFn;
+        }
+        else {
+            this.replacerFn = replacerOrFn;
+            this.replacer = Placeholder.default;
+        }
+    }
+    static defaultFn(param) {
+        return ("this placeholder doesn´t supports functions");
+    }
+    static onlyString(param) {
+        if ((typeof param).toLowerCase() !== 'string')
+            throw new Error("this placeholder doesn´t supports functions without a string as param");
+    }
+}
+Placeholder.default = "this placeholder doesn´t supports no Function";
+let Placeholders = {
+    date: new Placeholder('date', `${(new Date()).getDate()}`),
+    day: new Placeholder('day', `${(new Date()).getDay()}`),
+    month: new Placeholder('month', `${(new Date()).getMonth()}`),
+    fullYear: new Placeholder('date', `${(new Date()).getFullYear()}`),
+    hours: new Placeholder('date', `${(new Date()).getHours()}`),
+    minutes: new Placeholder('date', `${(new Date()).getMinutes()}`),
+    seconds: new Placeholder('date', `${(new Date()).getSeconds()}`),
+    service: new Placeholder('service', ((placeholderVars) => {
+        return `[${placeholderVars.activeService}]`;
+    }))
+};
+//# sourceMappingURL=placeholders.js.map
+
+var Runtime;
 (function (Runtime) {
     Runtime[Runtime["commonjs"] = 0] = "commonjs";
     Runtime[Runtime["amd"] = 1] = "amd";
@@ -18,17 +53,18 @@ else {
     fs = (() => { });
     path = (() => { });
 }
-export class LogUpTs {
+class LogUpTs {
     constructor(logOptions) {
+        this.placeholderVars = {};
         this.logOptions = {
             placeholders: Placeholders,
-            praefix: '{{service(activeService)}} ',
+            praefix: '{{service()}} ',
             postfix: '',
             quiet: false,
             logFiles: [],
-            writeToFile: false
+            writeToFileSystem: false
         };
-        this.activeService = 'LOG';
+        this.placeholderVars.activeService = 'LOG';
         this.this = this;
         if (logOptions)
             this._mergeOptions(logOptions);
@@ -67,7 +103,7 @@ export class LogUpTs {
                         let fn = placeholders[propName].replacerFn || (() => { return "help"; });
                         let cUpNumber = cUp(cUpStr);
                         if (cUpNumber === 0) {
-                            string = string.replace(regexFn, fn());
+                            string = string.replace(regexFn, fn(this.this.placeholderVars));
                         }
                         else {
                             if (typeof this.this[string.substr(minIndex, cUpNumber)] === 'string') {
@@ -79,7 +115,6 @@ export class LogUpTs {
                         }
                     }
                 }
-                ;
             }
             return string;
         }
@@ -101,56 +136,55 @@ export class LogUpTs {
         return currentObj;
     }
     log(message, options) {
-        this.activeService = 'LOG';
+        this.placeholderVars.activeService = 'LOG';
         let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) +
             message +
             this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
         if (!this.logOptions.quiet)
             console.log(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
             return outPut;
         let toPrint = ['ALL', 'LOG'];
         return this.genDirs.then(() => { return this.node_allFiles(toPrint, outPut); });
     }
     error(message, options) {
-        this.activeService = 'ERROR';
+        this.placeholderVars.activeService = 'ERROR';
         let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) +
             (message instanceof Error ? message.message : message) +
             this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
         if (!this.logOptions.quiet)
             console.error(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
             return outPut;
         let toPrint = ['ALL', 'ERROR'];
         return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
     }
     info(message, options) {
-        this.activeService = 'INFO';
+        this.placeholderVars.activeService = 'INFO';
         let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) +
             message +
             this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
         if (!this.logOptions.quiet)
             console.info(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
             return outPut;
         let toPrint = ['ALL', 'INFO'];
         return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
     }
     custom(praefix, postfix, message, options) {
-        this.activeService = 'CUSTOM ';
+        this.placeholderVars.activeService = 'CUSTOM ';
         let outPut = this._generateStringOutOfPlaceholderString(praefix) +
             message +
             this._generateStringOutOfPlaceholderString(postfix);
         if (!this.logOptions.quiet)
             console.log(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
             return outPut;
         let toPrint = ['ALL', 'CUSTOM', praefix];
         return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
     }
     node_allFiles(servicesToLog, message, depth = 0) {
         let logFiles = this.logOptions.logFiles || [];
-        let foundServiceInIPathsServiceToLog = false;
         if (depth < logFiles.length) {
             let idents = [];
             let k = logFiles[depth];
@@ -202,44 +236,6 @@ export class LogUpTs {
         return this.node_generateLogDir(toGenPaths);
     }
 }
-export let Placeholders = {
-    day: {
-        key: 'day',
-        replacer: fillStrWithZeros(2, `${(new Date()).getDate()}`)
-    },
-    month: {
-        key: 'month',
-        replacer: fillStrWithZeros(2, `${(new Date()).getMonth() + 1}`)
-    },
-    year: {
-        key: 'year',
-        replacer: fillStrWithZeros(4, `${(new Date()).getFullYear()}`)
-    },
-    service: {
-        key: 'service',
-        replacerFn: (param) => {
-            param = param || 'LOG';
-            return '[' + param.toUpperCase() + ']';
-        }
-    },
-    frog: {
-        key: 'frog',
-        replacer: 'milleniumfrog',
-        replacerFn: (param) => {
-            param = param || 'null';
-            return 'The frog says ' + param + '!';
-        }
-    }
-};
-function fillStrWithZeros(length, msg) {
-    if (length < msg.length) {
-        throw new Error('the message is longer than the wished length.');
-    }
-    else {
-        for (let i = msg.length; i < length; ++i) {
-            msg = '0' + msg;
-        }
-    }
-    return msg;
-}
 //# sourceMappingURL=logupts.js.map
+
+export { Runtime, LogUpTs };

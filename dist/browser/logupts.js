@@ -1,31 +1,52 @@
-(function (factory) {
-    if (typeof module === "object" && typeof module.exports === "object") {
-        var v = factory(require, exports);
-        if (v !== undefined) module.exports = v;
+var logupts = (function (exports) {
+    'use strict';
+
+    class Placeholder {
+        constructor(key, replacerOrFn = "") {
+            this.key = key;
+            if (typeof replacerOrFn === 'string') {
+                this.replacer = replacerOrFn;
+                this.replacerFn = Placeholder.defaultFn;
+            }
+            else {
+                this.replacerFn = replacerOrFn;
+                this.replacer = Placeholder.default;
+            }
+        }
+        static defaultFn(param) {
+            return ("this placeholder doesn´t supports functions");
+        }
+        static onlyString(param) {
+            if ((typeof param).toLowerCase() !== 'string')
+                throw new Error("this placeholder doesn´t supports functions without a string as param");
+        }
     }
-    else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./placeholders", "./placeholders"], factory);
-    }
-})(function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const placeholders_1 = require("./placeholders");
-    var placeholders_2 = require("./placeholders");
-    exports.Placeholders = placeholders_2.Placeholders;
-    exports.Placeholder = placeholders_2.Placeholder;
-    var Runtime;
+    Placeholder.default = "this placeholder doesn´t supports no Function";
+    let Placeholders = {
+        date: new Placeholder('date', `${(new Date()).getDate()}`),
+        day: new Placeholder('day', `${(new Date()).getDay()}`),
+        month: new Placeholder('month', `${(new Date()).getMonth()}`),
+        fullYear: new Placeholder('date', `${(new Date()).getFullYear()}`),
+        hours: new Placeholder('date', `${(new Date()).getHours()}`),
+        minutes: new Placeholder('date', `${(new Date()).getMinutes()}`),
+        seconds: new Placeholder('date', `${(new Date()).getSeconds()}`),
+        service: new Placeholder('service', ((placeholderVars) => {
+            return `[${placeholderVars.activeService}]`;
+        }))
+    };
+
     (function (Runtime) {
         Runtime[Runtime["commonjs"] = 0] = "commonjs";
         Runtime[Runtime["amd"] = 1] = "amd";
         Runtime[Runtime["default"] = 2] = "default";
-    })(Runtime = exports.Runtime || (exports.Runtime = {}));
+    })(exports.Runtime || (exports.Runtime = {}));
     let runtime = (typeof module === 'object' && typeof module.exports === "object") ?
-        Runtime.commonjs :
+        exports.Runtime.commonjs :
         (typeof define === "function" && define.amd) ?
-            Runtime.amd :
-            Runtime.default;
+            exports.Runtime.amd :
+            exports.Runtime.default;
     let fs, path;
-    if (runtime === Runtime.commonjs) {
+    if (runtime === exports.Runtime.commonjs) {
         fs = require('fs');
         path = require('path');
     }
@@ -37,7 +58,7 @@
         constructor(logOptions) {
             this.placeholderVars = {};
             this.logOptions = {
-                placeholders: placeholders_1.Placeholders,
+                placeholders: Placeholders,
                 praefix: '{{service()}} ',
                 postfix: '',
                 quiet: false,
@@ -95,7 +116,6 @@
                             }
                         }
                     }
-                    ;
                 }
                 return string;
             }
@@ -123,7 +143,7 @@
                 this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
             if (!this.logOptions.quiet)
                 console.log(outPut);
-            if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
+            if (runtime !== exports.Runtime.commonjs || !this.logOptions.writeToFileSystem)
                 return outPut;
             let toPrint = ['ALL', 'LOG'];
             return this.genDirs.then(() => { return this.node_allFiles(toPrint, outPut); });
@@ -135,7 +155,7 @@
                 this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
             if (!this.logOptions.quiet)
                 console.error(outPut);
-            if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
+            if (runtime !== exports.Runtime.commonjs || !this.logOptions.writeToFileSystem)
                 return outPut;
             let toPrint = ['ALL', 'ERROR'];
             return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
@@ -147,7 +167,7 @@
                 this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
             if (!this.logOptions.quiet)
                 console.info(outPut);
-            if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
+            if (runtime !== exports.Runtime.commonjs || !this.logOptions.writeToFileSystem)
                 return outPut;
             let toPrint = ['ALL', 'INFO'];
             return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
@@ -159,14 +179,13 @@
                 this._generateStringOutOfPlaceholderString(postfix);
             if (!this.logOptions.quiet)
                 console.log(outPut);
-            if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
+            if (runtime !== exports.Runtime.commonjs || !this.logOptions.writeToFileSystem)
                 return outPut;
             let toPrint = ['ALL', 'CUSTOM', praefix];
             return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
         }
         node_allFiles(servicesToLog, message, depth = 0) {
             let logFiles = this.logOptions.logFiles || [];
-            let foundServiceInIPathsServiceToLog = false;
             if (depth < logFiles.length) {
                 let idents = [];
                 let k = logFiles[depth];
@@ -203,7 +222,7 @@
         }
         node_generateLogDir(toGenPaths) {
             if (toGenPaths.length === 0)
-                return new Promise((resolve, reject) => { resolve(); });
+                return new Promise((resolve) => { resolve(); });
             let pathSegments = toGenPaths[0].split(path.sep);
             let pathToCheck = '';
             for (let pathSegment of pathSegments) {
@@ -218,6 +237,9 @@
             return this.node_generateLogDir(toGenPaths);
         }
     }
+
     exports.LogUpTs = LogUpTs;
-});
-//# sourceMappingURL=logupts.js.map
+
+    return exports;
+
+}({}));

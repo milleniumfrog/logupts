@@ -1,14 +1,9 @@
+import { Placeholder } from './placeholders';
+export { Placeholders, Placeholder } from './placeholders';
 export declare enum Runtime {
     commonjs = 0,
     amd = 1,
     default = 2,
-}
-export interface IPlaceholders {
-    [index: string]: {
-        replacer?: string;
-        replacerFn?: ((param?: string) => string);
-        key: string;
-    };
 }
 export interface ILogUpTs {
     [prop: string]: any;
@@ -28,14 +23,16 @@ export interface ILogUpTsOptions {
     path?: string;
     praefix?: string;
     postfix?: string;
-    placeholders?: IPlaceholders;
+    placeholders?: {
+        [str: string]: Placeholder;
+    };
     quiet?: boolean;
     logFiles?: Array<IPaths>;
-    writeToFile: boolean;
+    writeToFileSystem: boolean;
 }
 export declare class LogUpTs implements ILogUpTs {
     logOptions: ILogUpTsOptions;
-    activeService: string;
+    placeholderVars: any;
     private this;
     genDirs: any;
     constructor(logOptions?: ILogUpTsOptions);
@@ -50,4 +47,3 @@ export declare class LogUpTs implements ILogUpTs {
     node_writeToFS(absolutePath: string, fileName: string, message: string): Promise<void>;
     node_generateLogDir(toGenPaths: Array<string>): Promise<void>;
 }
-export declare let Placeholders: IPlaceholders;

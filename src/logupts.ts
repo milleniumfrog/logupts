@@ -1,3 +1,8 @@
+import { Placeholders, Placeholder } from './placeholders';
+// reexport
+export { Placeholders, Placeholder } from './placeholders';
+
+
 
 declare let define: any;
 declare let module: any;
@@ -31,13 +36,6 @@ if (runtime === Runtime.commonjs) {
 ////// Interfaces //////////////
 ////////////////////////////////
 
-export interface IPlaceholders {
-    [index: string]: {
-        replacer?: string;
-        replacerFn?: ((param?: string) => string);
-        key: string;
-    }
-}
 
 /**
  * interface für ie Logts Klasse
@@ -74,11 +72,11 @@ export interface ILogUpTsOptions {
     praefix?: string;
     postfix?: string;
     /** the Placeholders for praefix and postfix */
-    placeholders?: IPlaceholders;
+    placeholders?: {[str: string]: Placeholder};
     /** log to console or dont */
     quiet?: boolean;
     logFiles?: Array<IPaths>;
-    writeToFile: boolean;
+    writeToFileSystem: boolean;
 }
 
 
@@ -89,7 +87,7 @@ export class LogUpTs implements ILogUpTs {
      * @type {ILogUpTsOptions} 
      */
     public logOptions: ILogUpTsOptions;
-    public activeService: string;
+    public placeholderVars: any;
     private this: any;
     public genDirs: any;
     /**
@@ -97,15 +95,16 @@ export class LogUpTs implements ILogUpTs {
      * @param logOptions {ILogUpTsOptions}
      */
     constructor(logOptions?: ILogUpTsOptions) {
+        this.placeholderVars = {};
         this.logOptions = {
             placeholders: Placeholders,
-            praefix: '{{service(activeService)}} ',
+            praefix: '{{service()}} ',
             postfix: '',
             quiet: false,
             logFiles: [],
-            writeToFile: false
+            writeToFileSystem: false
         }
-        this.activeService = 'LOG';
+        this.placeholderVars.activeService = 'LOG';
         this.this = this;
         if (logOptions)
             this._mergeOptions(logOptions);
@@ -153,7 +152,7 @@ export class LogUpTs implements ILogUpTs {
                         let fn: ((param?: string) => string) = placeholders[propName].replacerFn || (() => { return "help" });
                         let cUpNumber = cUp(cUpStr)
                         if (cUpNumber === 0) {
-                            string = string.replace(regexFn, fn()); // ersetze Platzhalter durch Normalwert
+                            string = string.replace(regexFn, fn(this.this.placeholderVars)); // ersetze Platzhalter durch Normalwert
                         } else {
                             if (typeof this.this[string.substr(minIndex, cUpNumber)] === 'string') {
                                 string = string.replace(regexFn, fn(this.this[string.substr(minIndex, cUpNumber)])); // ersetze Wert durch Wert von fn(this[string])
@@ -215,14 +214,14 @@ export class LogUpTs implements ILogUpTs {
      * @public
      */
     log(message: string, options?: ILogUpTsOptions): string |  Promise<string> | void {
-        this.activeService = 'LOG'; // setze aktivenService auf Log
+        this.placeholderVars.activeService = 'LOG'; // setze aktivenService auf Log
         let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) + // setze den String zusammen
             message +
             this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
         // log to console
         if (!this.logOptions.quiet)
             console.log(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
             return outPut;
         // nodejs Teil
         let toPrint = ['ALL', 'LOG'];
@@ -237,14 +236,14 @@ export class LogUpTs implements ILogUpTs {
      * @public
      */
     error(message: string | Error, options?: ILogUpTsOptions): string |  Promise<string> {
-        this.activeService = 'ERROR'; // setze aktivenService auf Log
+        this.placeholderVars.activeService = 'ERROR'; // setze aktivenService auf Log
         let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) + // setze den String zusammen
             (message instanceof Error ? message.message : message) +
             this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
         // log to console
         if (!this.logOptions.quiet)
             console.error(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
             return outPut;
         // nodejs Teil
         let toPrint = ['ALL', 'ERROR'];
@@ -260,14 +259,14 @@ export class LogUpTs implements ILogUpTs {
  * @public
  */
     info(message: string, options?: ILogUpTsOptions): string |  Promise<string> {
-        this.activeService = 'INFO'; // setze aktivenService auf Log
+        this.placeholderVars.activeService = 'INFO'; // setze aktivenService auf Log
         let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) + // setze den String zusammen
             message +
             this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
         // log to console
         if (!this.logOptions.quiet)
             console.info(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
             return outPut;
         // nodejs Teil
         let toPrint = ['ALL', 'INFO'];
@@ -282,7 +281,7 @@ export class LogUpTs implements ILogUpTs {
      * @param logoptions 
      */
     custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions): string |  Promise<string> {
-        this.activeService = 'CUSTOM '; // setze aktivenService auf Log
+        this.placeholderVars.activeService = 'CUSTOM '; // setze aktivenService auf Log
         let outPut = this._generateStringOutOfPlaceholderString(praefix) + // setze den String zusammen
              message +
             this._generateStringOutOfPlaceholderString(postfix);
@@ -290,7 +289,7 @@ export class LogUpTs implements ILogUpTs {
         if (!this.logOptions.quiet)
             console.log(outPut);
         // nodejs Teil
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFile)
+        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
             return outPut;
         let toPrint = ['ALL', 'CUSTOM', praefix];
         return this.genDirs.then(()=>this.node_allFiles(toPrint, outPut));
@@ -329,7 +328,6 @@ export class LogUpTs implements ILogUpTs {
             }
 
             return this.node_allFiles(servicesToLog, message, ++depth);
-
         }
         return new Promise((resolve, reject) => {
             resolve(message);
@@ -359,7 +357,7 @@ export class LogUpTs implements ILogUpTs {
      */
     node_generateLogDir (toGenPaths: Array<string>): Promise<void> {
         if (toGenPaths.length === 0) 
-            return new Promise((resolve) => {resolve();});
+            return new Promise((resolve, reject) => {resolve();});
         let pathSegments = toGenPaths[0].split(path.sep);
         let pathToCheck = '';
         for (let pathSegment of pathSegments) {
@@ -373,57 +371,4 @@ export class LogUpTs implements ILogUpTs {
         return this.node_generateLogDir(toGenPaths);
     }
 
-}
-
-/**
- * Die Logts Klasse, logge mit einem Variablen Praefix und Postfix, speichere deinen Log in nodejs in einer Datei
- * Bietet die Service: 
- * LOG, ERROR (ALL für alle)
- * @constructor
- */
-
-export let Placeholders: IPlaceholders = {
-    day: {
-        key: 'day',
-        replacer: fillStrWithZeros(2, `${(new Date()).getDate()}`)
-    },
-    month: {
-        key: 'month',
-        replacer: fillStrWithZeros(2, `${(new Date()).getMonth() + 1}`)
-    },
-    year: {
-        key: 'year',
-        replacer: fillStrWithZeros(4, `${(new Date()).getFullYear()}`)
-    },
-    service: {
-        key: 'service',
-        replacerFn: (param?: string) => {
-            param = param ||  'LOG';
-            return '[' + param.toUpperCase() + ']';
-        }
-    },
-    frog: {
-        key: 'frog',
-        replacer: 'milleniumfrog',
-        replacerFn: (param?: string) => {
-            param = param ||  'null';
-            return 'The frog says ' + param + '!';
-        }
-    }
-}
-
-/**
- * fill up a string with zeros
- * @param length 
- * @param msg 
- */
-function fillStrWithZeros(length: number, msg: string) {
-    if (length < msg.length) {
-        throw new Error('the message is longer than the wished length.');
-    } else {
-        for (let i = msg.length; i < length; ++i) {
-            msg = '0' + msg;
-        }
-    }
-    return msg;
 }
