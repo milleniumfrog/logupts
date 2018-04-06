@@ -29,8 +29,8 @@ if (runtime === Runtime.commonjs) {
     fs = require('fs');
     path = require('path');
 } else {
-    fs = (() => {});
-    path = (() => {});
+    fs = (() => { });
+    path = (() => { });
 }
 ////////////////////////////////
 ////// Interfaces //////////////
@@ -43,10 +43,10 @@ if (runtime === Runtime.commonjs) {
  */
 export interface ILogUpTs {
     [prop: string]: any
-    log: (msg: string, options?: ILogUpTsOptions) => string |  Promise<string> |  void;
-    error: (msg: string, options?: ILogUpTsOptions) => string |  Promise<string>;
-    info: (msg: string, options?: ILogUpTsOptions) => string |  Promise<string>;
-    custom: (praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, serviceName?: string) => string |  Promise<string>;
+    log: (msg: string, options?: ILogUpTsOptions) => string | Promise<string> | void;
+    error: (msg: string, options?: ILogUpTsOptions) => string | Promise<string>;
+    info: (msg: string, options?: ILogUpTsOptions) => string | Promise<string>;
+    custom: (praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, serviceName?: string) => string | Promise<string>;
 }
 
 /**
@@ -75,7 +75,7 @@ export interface ILogUpTsOptions {
      */
     postfix?: string;
     /** a list of all placeholders */
-    placeholders?: {[str: string]: Placeholder};
+    placeholders?: { [str: string]: Placeholder };
     /** log to console or dont */
     quiet?: boolean;
     /** configure what and where should be saved */
@@ -114,6 +114,7 @@ export class LogUpTs implements ILogUpTs {
             postfix: '',
             quiet: false,
             logFiles: [],
+            /** @deprecated use writeToFileSystem instead */
             writeToFile: false,
             writeToFileSystem: false
         }
@@ -122,7 +123,7 @@ export class LogUpTs implements ILogUpTs {
         if (logOptions)
             this._mergeOptions(logOptions);
         // get all paths
-        this.logOptions.logFiles = this.logOptions.logFiles || [];
+        this.logOptions.logFiles = this.logOptions.logFiles ||  [];
         let paths: Array<string> = [];
         for (let logFile of this.logOptions.logFiles) {
             paths.push(logFile.path);
@@ -153,11 +154,11 @@ export class LogUpTs implements ILogUpTs {
             for (let propName in placeholders) {
                 // replace defaults
                 let regexDefault = new RegExp(`{{${placeholders[propName].key}}}`, 'gi');
-                string = string.replace(regexDefault, placeholders[propName].replacer ||  '');
+                string = string.replace(regexDefault, placeholders[propName].replacer || '');
                 // replace functions
                 let regexFn = new RegExp(`{{${placeholders[propName].key}\((.{0,})\)}}`, 'i');
                 while (regexFn.exec(string)) { // falls ein Eintrag gefunden wurde
-                    let match = regexFn.exec(string) ||  { index: -1 };
+                    let match = regexFn.exec(string) || { index: -1 };
                     let index = match.index;
                     if (index >= 0) { // wenn ein Eintrag gefunden wurde
                         let length1 = `{{${placeholders[propName].key}(`.length;
@@ -227,15 +228,15 @@ export class LogUpTs implements ILogUpTs {
      * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
      * @public
      */
-    log(message: string, options?: ILogUpTsOptions): string |  Promise<string> | void {
+    log(message: string, options?: ILogUpTsOptions): string | Promise<string> | void {
         let opt = options || this.logOptions;
         return this.internal(
-            this.logOptions.praefix || '{{service()}}', 
-            this.logOptions.postfix  || '',
+            this.logOptions.praefix || '{{service()}}',
+            this.logOptions.postfix || '',
             'LOG',
             ['ALL', 'LOG'],
             message,
-             options, 'log'
+            options, 'log'
         )
     }
     /**
@@ -245,32 +246,32 @@ export class LogUpTs implements ILogUpTs {
      * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
      * @public
      */
-    error(message: string | Error, options?: ILogUpTsOptions): string |  Promise<string> {
+    error(message: string | Error, options?: ILogUpTsOptions): string | Promise<string> {
         return this.internal(
-            this.logOptions.praefix || '{{service()}}', 
-            this.logOptions.postfix  || '',
+            this.logOptions.praefix || '{{service()}}',
+            this.logOptions.postfix || '',
             'ERROR',
             ['ALL', 'ERROR'],
             message instanceof Error ? message.message : message,
-             options, 'error'
+            options, 'error'
         )
     }
 
-      /**
-     * Log a errormessage, generate a String with Prefix and Postfix, write
-     * @param message {string} Deine Nachricht
-     * @param [options] {ILogUpTsOptions} 
-     * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
-     * @public
-     */
-    warn(message: string | Error, options?: ILogUpTsOptions): string |  Promise<string> {
+    /**
+   * Log a errormessage, generate a String with Prefix and Postfix, write
+   * @param message {string} Deine Nachricht
+   * @param [options] {ILogUpTsOptions} 
+   * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
+   * @public
+   */
+    warn(message: string |  Error, options?: ILogUpTsOptions): string | Promise<string> {
         return this.internal(
-            this.logOptions.praefix || '{{service()}}', 
-            this.logOptions.postfix  || '',
+            this.logOptions.praefix || '{{service()}}',
+            this.logOptions.postfix || '',
             'WARN',
             ['ALL', 'WARN'],
             message instanceof Error ? message.message : message,
-             options, 'warn'
+            options, 'warn'
         )
     }
 
@@ -282,15 +283,15 @@ export class LogUpTs implements ILogUpTs {
  * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
  * @public
  */
-    info(message: string, options?: ILogUpTsOptions): string |  Promise<string> {
+    info(message: string, options?: ILogUpTsOptions): string | Promise<string> {
         return this.internal(
-            this.logOptions.praefix || '{{service()}}', 
-            this.logOptions.postfix  || '',
+            this.logOptions.praefix || '{{service()}}',
+            this.logOptions.postfix || '',
             'INFO',
             ['ALL', 'INFO'],
             message, options, 'info'
         )
-        }
+    }
 
     /**
      * 
@@ -299,25 +300,24 @@ export class LogUpTs implements ILogUpTs {
      * @param message {string} Deine Nachricht
      * @param logoptions 
      */
-    custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, activeService?: string): string |  Promise<string> {
+    custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, activeService?: string): string | Promise<string> {
         let toPrint = ['ALL', 'CUSTOM', praefix];
-        return this.internal(praefix, postfix, activeService || 'CUSTOM', 
-        toPrint, message);
+        return this.internal(praefix, postfix, activeService || 'CUSTOM',
+            toPrint, message);
     }
 
     // internal custom function
-    internal(praefix: string, postfix: string, activeService: string, toPrint: Array<string>, 
-            message: string, options?: ILogUpTsOptions, consoleFunc: string = 'log'): string | Promise<string> {
+    internal(praefix: string, postfix: string, activeService: string, toPrint: Array<string>,
+        message: string, options?: ILogUpTsOptions, consoleFunc: string = 'log'): string | Promise<string> {
         let opt: ILogUpTsOptions = options || this.logOptions;
         // set activeservice
         this.placeholderVars.activeService = activeService;
         // merge praefix message and postfix
         let outPut = praefix + message + postfix;
-        console.log(outPut);
         outPut = this._generateStringOutOfPlaceholderString(outPut);
         // log to console
-        if (!opt.quiet){
-            switch(consoleFunc){
+        if (!opt.quiet) {
+            switch (consoleFunc) {
                 case 'warn':
                     console.warn(outPut);
                     break;
@@ -334,8 +334,8 @@ export class LogUpTs implements ILogUpTs {
         // return a string if runtime is not nodejs and if the writeToFileSystem is false
         if (runtime !== Runtime.commonjs || !opt.writeToFileSystem)
             return outPut;
-        else 
-            return this.genDirs.then(()=>this.node_allFiles(toPrint, outPut));
+        else
+            return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
     }
 
     ////////////////////////////////
@@ -349,7 +349,7 @@ export class LogUpTs implements ILogUpTs {
      * @param depth 
      */
     node_allFiles(servicesToLog: Array<string>, message: string, depth: number = 0): Promise<string> {
-        let logFiles = this.logOptions.logFiles ||  [];
+        let logFiles = this.logOptions.logFiles || [];
         let foundServiceInIPathsServiceToLog: boolean = false;
         // Lade identifier der logPaths
         if (depth < logFiles.length) {
@@ -398,13 +398,13 @@ export class LogUpTs implements ILogUpTs {
      * erstelle die Pfade aus absoluten Pfadangaben synchron
      * @param toGenPaths 
      */
-    node_generateLogDir (toGenPaths: Array<string>): Promise<void> {
-        if (toGenPaths.length === 0) 
-            return new Promise((resolve, reject) => {resolve();});
+    node_generateLogDir(toGenPaths: Array<string>): Promise<void> {
+        if (toGenPaths.length === 0)
+            return new Promise((resolve, reject) => { resolve(); });
         let pathSegments = toGenPaths[0].split(path.sep);
         let pathToCheck = '';
         for (let pathSegment of pathSegments) {
-            if (pathSegment === '/' || pathSegment === '') continue;
+            if (pathSegment === '/' ||  pathSegment === '') continue;
             pathToCheck += '/' + pathSegment;
             if (!fs.existsSync(pathToCheck)) {
                 fs.mkdirSync(pathToCheck);

@@ -152,16 +152,16 @@ var logupts = (function (exports) {
         }
         log(message, options) {
             let opt = options || this.logOptions;
-            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '{{service()}}', 'LOG', ['ALL', 'LOG'], message, options, 'log');
+            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'LOG', ['ALL', 'LOG'], message, options, 'log');
         }
         error(message, options) {
-            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '{{service()}}', 'ERROR', ['ALL', 'ERROR'], message instanceof Error ? message.message : message, options, 'error');
+            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'ERROR', ['ALL', 'ERROR'], message instanceof Error ? message.message : message, options, 'error');
         }
         warn(message, options) {
-            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '{{service()}}', 'WARN', ['ALL', 'WARN'], message instanceof Error ? message.message : message, options, 'warn');
+            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'WARN', ['ALL', 'WARN'], message instanceof Error ? message.message : message, options, 'warn');
         }
         info(message, options) {
-            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '{{service()}}', 'INFO', ['ALL', 'INFO'], message, options, 'info');
+            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'INFO', ['ALL', 'INFO'], message, options, 'info');
         }
         custom(praefix, postfix, message, options, activeService) {
             let toPrint = ['ALL', 'CUSTOM', praefix];
@@ -171,20 +171,21 @@ var logupts = (function (exports) {
             let opt = options || this.logOptions;
             this.placeholderVars.activeService = activeService;
             let outPut = praefix + message + postfix;
+            console.log(outPut);
             outPut = this._generateStringOutOfPlaceholderString(outPut);
             if (!opt.quiet) {
                 switch (consoleFunc) {
                     case 'warn':
-                        console.warn(message);
+                        console.warn(outPut);
                         break;
                     case 'error':
-                        console.error(message);
+                        console.error(outPut);
                         break;
                     case 'info':
-                        console.info(message);
+                        console.info(outPut);
                         break;
                     default:
-                        console.log(message);
+                        console.log(outPut);
                 }
             }
             if (runtime !== exports.Runtime.commonjs || !opt.writeToFileSystem)

@@ -170,7 +170,6 @@ class LogUpTs {
         let opt = options || this.logOptions;
         this.placeholderVars.activeService = activeService;
         let outPut = praefix + message + postfix;
-        console.log(outPut);
         outPut = this._generateStringOutOfPlaceholderString(outPut);
         if (!opt.quiet) {
             switch (consoleFunc) {
@@ -245,6 +244,5 @@ class LogUpTs {
         return this.node_generateLogDir(toGenPaths);
     }
 }
-//# sourceMappingURL=logupts.js.map
 
 export { Runtime, LogUpTs, Placeholders, Placeholder };

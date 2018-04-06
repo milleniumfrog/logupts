@@ -138,7 +138,6 @@
             let opt = options || this.logOptions;
             this.placeholderVars.activeService = activeService;
             let outPut = praefix + message + postfix;
-            console.log(outPut);
             outPut = this._generateStringOutOfPlaceholderString(outPut);
             if (!opt.quiet) {
                 switch (consoleFunc) {

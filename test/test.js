@@ -47,6 +47,9 @@ function test(LogUpTs, path, expect, Placeholder, Runtime) {
             it('error', () => {
                 expect((new LogUpTs(quietOption)).error('hello world')).to.equal('[ERROR] hello world');
             })
+            it('warn', () => {
+                expect((new LogUpTs(quietOption)).warn('hello world')).to.equal('[WARN] hello world');
+            })
             it('custom', () => {
                 expect((new LogUpTs(quietOption)).custom('hello world', 'a log', ' i am ')).to.equal('hello world i am a log');
             })
