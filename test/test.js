@@ -34,7 +34,7 @@ if (runtime === 'commonjs') {
 // test function
 function test(LogUpTs, path, expect, Placeholder, Runtime) {
     let quietOption = {
-        quiet: false
+        quiet: runtime === 'commonjs'
     }
     describe('Client and Nodejs', () => {
         describe('return a string, default string', () => {
