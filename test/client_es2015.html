@@ -13,9 +13,10 @@
 
     <script>mocha.setup('bdd')</script>
     <script type="module" crossorigin="anonymous">
-        import { LogUpTs, Placeholders } from '../dist/es2015/logupts.js';
+        import { LogUpTs, Placeholder, Runtime } from 'https://dev.milleniumfrog.de/cdn/logupts/1.0.7/es2015/logupts.js';
+        window.Placeholder = Placeholder;
         window.LogUpTs = LogUpTs;
-        window.Placeholders = Placeholders;
+        window.Runtime = Runtime;
     </script>
     <script type="module" crossorigin="anonymous" src="./test.js">
     </script>

@@ -38,7 +38,7 @@ if (runtime === Runtime.commonjs) {
 
 
 /**
- * interface für ie Logts Klasse
+ * interface for the LogUpTs class and reimplementations
  * @interface
  */
 export interface ILogUpTs {
@@ -51,43 +51,55 @@ export interface ILogUpTs {
 
 /**
  * interface for the Logpath objects
+ * where and what shouldt get written in the logfiles
  * @interface 
  */
 export interface IPaths {
     identifier: string;
-    /** absoluter Pfad */
+    /** absolute path */
     path: string;
     fileName: string;
     serviceToLog: Array<string>
 }
 
 /**
- * interface for the LogOptions
+ * configure logupts
  * @interface
  */
 export interface ILogUpTsOptions {
     [index: string]: any;
-    /** only nodejs: Path for the logfile */
-    path?: string;
+    /** configure the praefix 
+     */
     praefix?: string;
+    /**configure the postfix 
+     */
     postfix?: string;
-    /** the Placeholders for praefix and postfix */
+    /** a list of all placeholders */
     placeholders?: {[str: string]: Placeholder};
     /** log to console or dont */
     quiet?: boolean;
+    /** configure what and where should be saved */
     logFiles?: Array<IPaths>;
-    writeToFileSystem: boolean;
+    /** @deprecated use writeToFileSystem instead */
+    writeToFile?: boolean;
+    /** activate writing the in logFiles configured files to filesystem (nodejs only) */
+    writeToFileSystem?: boolean;
 }
 
 
 export class LogUpTs implements ILogUpTs {
-    ///// Client und Server ///
     /** 
-     * internen optionen des Objekts 
+     * internal options
      * @type {ILogUpTsOptions} 
      */
     public logOptions: ILogUpTsOptions;
+    /**
+     * variables that get passed to the placeholderfunctions
+     */
     public placeholderVars: any;
+    /**
+     * make this accessable in ts without a type
+     */
     private this: any;
     public genDirs: any;
     /**
@@ -102,7 +114,6 @@ export class LogUpTs implements ILogUpTs {
             postfix: '',
             quiet: false,
             logFiles: [],
-            /** @deprecated use writeToFileSystem instead */
             writeToFile: false,
             writeToFileSystem: false
         }
@@ -217,40 +228,50 @@ export class LogUpTs implements ILogUpTs {
      * @public
      */
     log(message: string, options?: ILogUpTsOptions): string |  Promise<string> | void {
-        this.placeholderVars.activeService = 'LOG'; // setze aktivenService auf Log
-        let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) + // setze den String zusammen
-            message +
-            this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
-        // log to console
-        if (!this.logOptions.quiet)
-            console.log(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
-            return outPut;
-        // nodejs Teil
-        let toPrint = ['ALL', 'LOG'];
-        return this.genDirs.then(()=>{return this.node_allFiles(toPrint, outPut)});
+        let opt = options || this.logOptions;
+        return this.internal(
+            this.logOptions.praefix || '{{service()}}', 
+            this.logOptions.postfix  || '',
+            'LOG',
+            ['ALL', 'LOG'],
+            message,
+             options, 'log'
+        )
     }
     /**
-     * Gebe deine Nachricht mit Praefix und Postfix in der Konsole aus als info. <br />
-     * Falls this.quiet === true dann wird nicht auf die Konsole ausgegben
+     * Log a errormessage, generate a String with Prefix and Postfix, write
      * @param message {string} Deine Nachricht
      * @param [options] {ILogUpTsOptions} 
      * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
      * @public
      */
     error(message: string | Error, options?: ILogUpTsOptions): string |  Promise<string> {
-        this.placeholderVars.activeService = 'ERROR'; // setze aktivenService auf Log
-        let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) + // setze den String zusammen
-            (message instanceof Error ? message.message : message) +
-            this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
-        // log to console
-        if (!this.logOptions.quiet)
-            console.error(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
-            return outPut;
-        // nodejs Teil
-        let toPrint = ['ALL', 'ERROR'];
-        return this.genDirs.then(()=>this.node_allFiles(toPrint, outPut));
+        return this.internal(
+            this.logOptions.praefix || '{{service()}}', 
+            this.logOptions.postfix  || '',
+            'ERROR',
+            ['ALL', 'ERROR'],
+            message instanceof Error ? message.message : message,
+             options, 'error'
+        )
+    }
+
+      /**
+     * Log a errormessage, generate a String with Prefix and Postfix, write
+     * @param message {string} Deine Nachricht
+     * @param [options] {ILogUpTsOptions} 
+     * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
+     * @public
+     */
+    warn(message: string | Error, options?: ILogUpTsOptions): string |  Promise<string> {
+        return this.internal(
+            this.logOptions.praefix || '{{service()}}', 
+            this.logOptions.postfix  || '',
+            'WARN',
+            ['ALL', 'WARN'],
+            message instanceof Error ? message.message : message,
+             options, 'warn'
+        )
     }
 
     /**
@@ -262,19 +283,14 @@ export class LogUpTs implements ILogUpTs {
  * @public
  */
     info(message: string, options?: ILogUpTsOptions): string |  Promise<string> {
-        this.placeholderVars.activeService = 'INFO'; // setze aktivenService auf Log
-        let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) + // setze den String zusammen
-            message +
-            this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
-        // log to console
-        if (!this.logOptions.quiet)
-            console.info(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
-            return outPut;
-        // nodejs Teil
-        let toPrint = ['ALL', 'INFO'];
-        return this.genDirs.then(()=>this.node_allFiles(toPrint, outPut));
-    }
+        return this.internal(
+            this.logOptions.praefix || '{{service()}}', 
+            this.logOptions.postfix  || '',
+            'INFO',
+            ['ALL', 'INFO'],
+            message, options, 'info'
+        )
+        }
 
     /**
      * 
@@ -283,19 +299,43 @@ export class LogUpTs implements ILogUpTs {
      * @param message {string} Deine Nachricht
      * @param logoptions 
      */
-    custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions): string |  Promise<string> {
-        this.placeholderVars.activeService = 'CUSTOM '; // setze aktivenService auf Log
-        let outPut = this._generateStringOutOfPlaceholderString(praefix) + // setze den String zusammen
-             message +
-            this._generateStringOutOfPlaceholderString(postfix);
-        // log to console
-        if (!this.logOptions.quiet)
-            console.log(outPut);
-        // nodejs Teil
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
-            return outPut;
+    custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, activeService?: string): string |  Promise<string> {
         let toPrint = ['ALL', 'CUSTOM', praefix];
-        return this.genDirs.then(()=>this.node_allFiles(toPrint, outPut));
+        return this.internal(praefix, postfix, activeService || 'CUSTOM', 
+        toPrint, message);
+    }
+
+    // internal custom function
+    internal(praefix: string, postfix: string, activeService: string, toPrint: Array<string>, 
+            message: string, options?: ILogUpTsOptions, consoleFunc: string = 'log'): string | Promise<string> {
+        let opt: ILogUpTsOptions = options || this.logOptions;
+        // set activeservice
+        this.placeholderVars.activeService = activeService;
+        // merge praefix message and postfix
+        let outPut = praefix + message + postfix;
+        console.log(outPut);
+        outPut = this._generateStringOutOfPlaceholderString(outPut);
+        // log to console
+        if (!opt.quiet){
+            switch(consoleFunc){
+                case 'warn':
+                    console.warn(outPut);
+                    break;
+                case 'error':
+                    console.error(outPut);
+                    break;
+                case 'info':
+                    console.info(outPut);
+                    break;
+                default:
+                    console.log(outPut);
+            }
+        }
+        // return a string if runtime is not nodejs and if the writeToFileSystem is false
+        if (runtime !== Runtime.commonjs || !opt.writeToFileSystem)
+            return outPut;
+        else 
+            return this.genDirs.then(()=>this.node_allFiles(toPrint, outPut));
     }
 
     ////////////////////////////////

@@ -44,6 +44,7 @@ function fillStrWithZeros(length, msg) {
     }
     return msg;
 }
+//# sourceMappingURL=placeholders.js.map
 
 var Runtime;
 (function (Runtime) {
@@ -149,52 +150,47 @@ class LogUpTs {
         return currentObj;
     }
     log(message, options) {
-        this.placeholderVars.activeService = 'LOG';
-        let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) +
-            message +
-            this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
-        if (!this.logOptions.quiet)
-            console.log(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
-            return outPut;
-        let toPrint = ['ALL', 'LOG'];
-        return this.genDirs.then(() => { return this.node_allFiles(toPrint, outPut); });
+        let opt = options || this.logOptions;
+        return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'LOG', ['ALL', 'LOG'], message, options, 'log');
     }
     error(message, options) {
-        this.placeholderVars.activeService = 'ERROR';
-        let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) +
-            (message instanceof Error ? message.message : message) +
-            this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
-        if (!this.logOptions.quiet)
-            console.error(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
-            return outPut;
-        let toPrint = ['ALL', 'ERROR'];
-        return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
+        return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'ERROR', ['ALL', 'ERROR'], message instanceof Error ? message.message : message, options, 'error');
+    }
+    warn(message, options) {
+        return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'WARN', ['ALL', 'WARN'], message instanceof Error ? message.message : message, options, 'warn');
     }
     info(message, options) {
-        this.placeholderVars.activeService = 'INFO';
-        let outPut = this._generateStringOutOfPlaceholderString(this.logOptions.praefix) +
-            message +
-            this._generateStringOutOfPlaceholderString(this.logOptions.postfix);
-        if (!this.logOptions.quiet)
-            console.info(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
-            return outPut;
-        let toPrint = ['ALL', 'INFO'];
-        return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
+        return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'INFO', ['ALL', 'INFO'], message, options, 'info');
     }
-    custom(praefix, postfix, message, options) {
-        this.placeholderVars.activeService = 'CUSTOM ';
-        let outPut = this._generateStringOutOfPlaceholderString(praefix) +
-            message +
-            this._generateStringOutOfPlaceholderString(postfix);
-        if (!this.logOptions.quiet)
-            console.log(outPut);
-        if (runtime !== Runtime.commonjs || !this.logOptions.writeToFileSystem)
-            return outPut;
+    custom(praefix, postfix, message, options, activeService) {
         let toPrint = ['ALL', 'CUSTOM', praefix];
-        return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
+        return this.internal(praefix, postfix, activeService || 'CUSTOM', toPrint, message);
+    }
+    internal(praefix, postfix, activeService, toPrint, message, options, consoleFunc = 'log') {
+        let opt = options || this.logOptions;
+        this.placeholderVars.activeService = activeService;
+        let outPut = praefix + message + postfix;
+        console.log(outPut);
+        outPut = this._generateStringOutOfPlaceholderString(outPut);
+        if (!opt.quiet) {
+            switch (consoleFunc) {
+                case 'warn':
+                    console.warn(outPut);
+                    break;
+                case 'error':
+                    console.error(outPut);
+                    break;
+                case 'info':
+                    console.info(outPut);
+                    break;
+                default:
+                    console.log(outPut);
+            }
+        }
+        if (runtime !== Runtime.commonjs || !opt.writeToFileSystem)
+            return outPut;
+        else
+            return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
     }
     node_allFiles(servicesToLog, message, depth = 0) {
         let logFiles = this.logOptions.logFiles || [];
@@ -249,5 +245,6 @@ class LogUpTs {
         return this.node_generateLogDir(toGenPaths);
     }
 }
+//# sourceMappingURL=logupts.js.map
 
 export { Runtime, LogUpTs, Placeholders, Placeholder };

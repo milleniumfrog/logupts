@@ -7,6 +7,7 @@ In Nodejs you can also save your log to different files.
 
 - [install logupts](#install)
 - [setup](#setup)
+- [extend](#extend)
 
 # install logupts <a name="install"></a>
 
@@ -20,6 +21,12 @@ or use the following links
 - https://dev.milleniumfrog.de/cdn/logupts/1.0.8/es2015/logupts.js for including as es2015 Module
 
 # Setup LogUpTs <a name="setup"></a>
+
+## Typescript
+```javascript
+import { LogUpTs, ILogUpTsOptions } from 'logupts';
+let logger:LogUpTs = new LogUpTs();
+```
 
 ## Nodejs
 
@@ -107,7 +114,7 @@ internal placeholder variables
 - activeService
 
 ## write logfiles (nodejs and mac/linux only)
-When you create the logger Object you can setup your logfiles like this
+When you create an object you can setup your logfiles like this
 ```javascript
 new LogUpTs({
     quiet: true, // disable the output to console (default = false)
@@ -131,8 +138,87 @@ new LogUpTs({
             expect(finalString).to.equal('[LOG] hello world');
         });
 ```
-The code snippet above creates two files and logs everything in the first file and in the second file it only logs messages when the log-function is used. As you can see you can include Placeholders in the Filename, but dont include Placeholders in the directory paths, this will not work. 
+The code snippet above creates two files and logs everything in the first file and in the second file it only logs messages when the log-function is used. 
+As you can see you can include Placeholders in the Filename, but don't include Placeholders in the directory paths, this will not work. 
 If you want to log everything in your File just set serviceToLog to ['ALL']
+
+# Extend LogUpTs <a name="extend"></a>
+
+## create a new logging function with custom()
+To easiest way to extend the class is to use the custom() function. You can set a static prefix and postfix in a new function and pass a message from the new function to the message argument at the custom function. You could add the new function to an existing instance of LogupTs.
+This would look like this:
+```javascript
+let log = new LogUpTs();
+function newFunc(message) {
+    return log.custom('[newFunc] ', ' [/newFunc]', message);
+}
+log.newFunc = newFunc;
+```
+
+## manage the placeholders
+### replace the existing placeholders
+To replace the placeholders you need a new placeholder object and a 
+LogUpTs instance. Then you can replace the under 
+instance.logOptions.placeholders the default placeholder object with your new object.
+```javascript
+let newPlaceholder = {
+    r2d2: new Placeholder('r2d2', 'c3po')
+   }
+let log = new LogUpTs(quietOption);
+log.logOptions.placeholders = newPlaceholder;
+```
+
+### add new placeholders
+If you want to add new placeholders you can use the already existing placeholder object and add a new property. please use the same property name as your placeholder key (first argument of the Placeholder constructor), so can you avoid name collisions.
+```javascript
+let logger = new LogUpTs(quietOption);
+let placeholders = logger.logOptions.placeholders;
+placeholders.king = new Placeholder('king', (param) => {
+    try {
+        Placeholder.onlyString(param);
+    }
+    catch(err) {
+        throw err;
+    }
+    return param;
+});
+```
+### merge new with exsting placeholders
+```javascript
+let newPlaceholder = {
+    r2d2: new Placeholder('r2d2', 'c3po')
+}
+let log2 = new LogUpTs({
+    quiet: true,
+    placeholders: newPlaceholder
+})
+```
+## newClass extends LogUpTs
+```javascript
+class Log extends LogUpTs {
+    constructor(logOptions){
+        super(logOptions);
+    }
+    greet(name){
+        return "hello " + name;
+    }
+    debug(message, options){
+        let opt = options || this.logOptions;
+        this.placeholderVars.activeService = 'DEBUG'; // setze aktivenService auf Log
+        let outPut = this._generateStringOutOfPlaceholderString(opt.praefix) +
+            message +
+            this._generateStringOutOfPlaceholderString(opt.postfix);
+        // log to console
+        if (!opt.quiet)
+            console.log(outPut);
+        if (runtime !== Runtime.commonjs || !opt.writeToFileSystem)
+            return outPut;
+        // nodejs part
+        let toPrint = ['ALL', 'DEBUG'];
+        return this.genDirs.then(()=>{return this.node_allFiles(toPrint, outPut)});
+    }
+}
+```
 
 ## DOC
 You can create a documentation to the class with
