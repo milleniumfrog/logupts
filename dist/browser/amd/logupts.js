@@ -1,5 +1,4 @@
-var logupts = (function (exports) {
-    'use strict';
+define(['exports'], function (exports) { 'use strict';
 
     class Placeholder {
         constructor(key, replacerOrFn = "") {
@@ -250,6 +249,6 @@ var logupts = (function (exports) {
     exports.Placeholders = Placeholders;
     exports.Placeholder = Placeholder;
 
-    return exports;
+    Object.defineProperty(exports, '__esModule', { value: true });
 
-}({}));
+});

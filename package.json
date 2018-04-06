@@ -2,7 +2,7 @@
   "name": "logupts",
   "version": "1.0.8",
   "description": "LogUpTs is an extendable class, which logs your message with a generated prefix and postfix. The prefix and postfix strings have the possibility to add Placeholder that will be replaced when the script executes. For example, you log 'hello world' with the following prefix: '{{month}}:{{year}} {{service(activeService)}}'. The result would be '03:2018 [LOG] hello world'. In Nodejs you can also save your log to diffrent files.",
-  "main": "dist/umd/logupts.js",
+  "main": "dist/es2015/logupts.js",
   "sourceMaps": "./map",
   "scripts": {
     "test": "mocha",
@@ -16,7 +16,7 @@
     "type": "git",
     "url": "https://github.com/milleniumfrog/logupts"
   },
-  "types": "./dist/umd/logupts.d.ts",
+  "types": "dist/es2015/logupts.d.ts",
   "author": "Schwarzinger René <web@milleniumfrog.de>",
   "license": "MIT",
   "devDependencies": {

@@ -1,6 +1,51 @@
-import { Placeholders } from './placeholders';
-export { Placeholders, Placeholder } from './placeholders';
-export var Runtime;
+class Placeholder {
+    constructor(key, replacerOrFn = "") {
+        this.key = key;
+        if (typeof replacerOrFn === 'string') {
+            this.replacer = replacerOrFn;
+            this.replacerFn = Placeholder.defaultFn;
+        }
+        else {
+            this.replacerFn = replacerOrFn;
+            this.replacer = Placeholder.default;
+        }
+    }
+    static defaultFn(param) {
+        return ("this placeholder doesn´t supports functions");
+    }
+    static onlyString(param) {
+        if ((typeof param).toLowerCase() !== 'string')
+            throw new Error("this placeholder doesn´t supports functions without a string as param");
+    }
+}
+Placeholder.default = "this placeholder doesn´t supports no Function";
+let Placeholders = {
+    date: new Placeholder('date', `${fillStrWithZeros(2, String((new Date()).getDate()))}`),
+    day: new Placeholder('day', `${fillStrWithZeros(2, String((new Date()).getDay()))}`),
+    month: new Placeholder('month', `${fillStrWithZeros(2, String((new Date()).getMonth() + 1))}`),
+    fullYear: new Placeholder('fullYear', `${(new Date()).getFullYear()}`),
+    year: new Placeholder('year', `${(new Date()).getFullYear()}`),
+    hours: new Placeholder('hours', `${fillStrWithZeros(2, String((new Date()).getHours()))}`),
+    minutes: new Placeholder('minutes', `${fillStrWithZeros(2, String((new Date()).getMinutes()))}`),
+    seconds: new Placeholder('seconds', `${fillStrWithZeros(2, String((new Date()).getSeconds()))}`),
+    frog: new Placeholder('frog', 'milleniumfrog'),
+    service: new Placeholder('service', ((placeholderVars) => {
+        return `[${placeholderVars.activeService}]`;
+    })),
+};
+function fillStrWithZeros(length, msg) {
+    if (length < msg.length) {
+        throw new Error('the message is longer than the wished length.');
+    }
+    else {
+        for (let i = msg.length; i < length; ++i) {
+            msg = '0' + msg;
+        }
+    }
+    return msg;
+}
+
+var Runtime;
 (function (Runtime) {
     Runtime[Runtime["commonjs"] = 0] = "commonjs";
     Runtime[Runtime["amd"] = 1] = "amd";
@@ -20,7 +65,7 @@ else {
     fs = (() => { });
     path = (() => { });
 }
-export class LogUpTs {
+class LogUpTs {
     constructor(logOptions) {
         this.placeholderVars = {};
         this.logOptions = {
@@ -83,7 +128,6 @@ export class LogUpTs {
                         }
                     }
                 }
-                ;
             }
             return string;
         }
@@ -148,7 +192,6 @@ export class LogUpTs {
     }
     node_allFiles(servicesToLog, message, depth = 0) {
         let logFiles = this.logOptions.logFiles || [];
-        let foundServiceInIPathsServiceToLog = false;
         if (depth < logFiles.length) {
             let idents = [];
             let k = logFiles[depth];
@@ -200,4 +243,5 @@ export class LogUpTs {
         return this.node_generateLogDir(toGenPaths);
     }
 }
-//# sourceMappingURL=/Users/reneschwarzinger/repos/logupts/config/map/logupts.js.map
+
+export { Runtime, LogUpTs, Placeholders, Placeholder };
