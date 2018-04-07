@@ -303,7 +303,7 @@ export class LogUpTs implements ILogUpTs {
     custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, activeService?: string): string | Promise<string> {
         let toPrint = ['ALL', 'CUSTOM', praefix];
         return this.internal(praefix, postfix, activeService || 'CUSTOM',
-            toPrint, message);
+            toPrint, message, options);
     }
 
     // internal custom function
