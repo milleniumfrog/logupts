@@ -164,7 +164,7 @@ define(['exports'], function (exports) { 'use strict';
         }
         custom(praefix, postfix, message, options, activeService) {
             let toPrint = ['ALL', 'CUSTOM', praefix];
-            return this.internal(praefix, postfix, activeService || 'CUSTOM', toPrint, message);
+            return this.internal(praefix, postfix, activeService || 'CUSTOM', toPrint, message, options);
         }
         internal(praefix, postfix, activeService, toPrint, message, options, consoleFunc = 'log') {
             let opt = options || this.logOptions;

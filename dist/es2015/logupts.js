@@ -119,7 +119,7 @@ export class LogUpTs {
     }
     custom(praefix, postfix, message, options, activeService) {
         let toPrint = ['ALL', 'CUSTOM', praefix];
-        return this.internal(praefix, postfix, activeService || 'CUSTOM', toPrint, message);
+        return this.internal(praefix, postfix, activeService || 'CUSTOM', toPrint, message, options);
     }
     internal(praefix, postfix, activeService, toPrint, message, options, consoleFunc = 'log') {
         let opt = options || this.logOptions;
@@ -200,4 +200,4 @@ export class LogUpTs {
         return this.node_generateLogDir(toGenPaths);
     }
 }
-//# sourceMappingURL=/Users/reneschwarzinger/repos/logupts/config/map/logupts.js.map
+//# sourceMappingURL=logupts.js.map
