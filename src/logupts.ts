@@ -135,7 +135,7 @@ export class LogUpTs implements ILogUpTs {
     /**
      * 
      * @param str {string | undefined} der Platzhalterstring im Angular-stil {{wort}}
-     * @returns {string} alle Platzhalter ersetzt 
+     * @returns {string} replaces a string withe replaced placeholders
      * @private
      */
     _generateStringOutOfPlaceholderString(str: string | undefined): string {
@@ -165,14 +165,18 @@ export class LogUpTs implements ILogUpTs {
                         let minIndex = index + length1;
                         let cUpStr = string.substr(minIndex);
                         let fn: ((param?: string) => string) = placeholders[propName].replacerFn || (() => { return "help" });
-                        let cUpNumber = cUp(cUpStr)
+                        let cUpNumber = cUp(cUpStr);
+                        let checkReg = new RegExp('{{', 'gi');
+                        if (checkReg.exec(string.substr(minIndex, cUpNumber)) !== null) {
+                            continue;
+                        }
                         if (cUpNumber === 0) {
-                            string = string.replace(regexFn, fn(this.this.placeholderVars)); // ersetze Platzhalter durch Normalwert
+                            string = string.replace(string.substr(index, length1 + cUpNumber +3), fn(this.this.placeholderVars)); // ersetze Platzhalter durch Normalwert
                         } else {
                             if (typeof this.this[string.substr(minIndex, cUpNumber)] === 'string') {
-                                string = string.replace(regexFn, fn(this.this[string.substr(minIndex, cUpNumber)])); // ersetze Wert durch Wert von fn(this[string])
+                                string = string.replace(string.substr(index, length1 + cUpNumber +3), fn(this.this[string.substr(minIndex, cUpNumber)])); // ersetze Wert durch Wert von fn(this[string])
                             } else {
-                                string = string.replace(regexFn, fn(string.substr(minIndex, cUpNumber))) // ersetze Wert durch durch Fn(string)
+                                string = string.replace(string.substr(index, length1 + cUpNumber +3), fn(string.substr(minIndex, cUpNumber))) // ersetze Wert durch durch Fn(string)
                             }
                         }
                     }

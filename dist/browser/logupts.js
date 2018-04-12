@@ -117,15 +117,19 @@ var logupts = (function (exports) {
                             let cUpStr = string.substr(minIndex);
                             let fn = placeholders[propName].replacerFn || (() => { return "help"; });
                             let cUpNumber = cUp(cUpStr);
+                            let checkReg = new RegExp('{{', 'gi');
+                            if (checkReg.exec(string.substr(minIndex, cUpNumber)) !== null) {
+                                continue;
+                            }
                             if (cUpNumber === 0) {
-                                string = string.replace(regexFn, fn(this.this.placeholderVars));
+                                string = string.replace(string.substr(index, length1 + cUpNumber + 3), fn(this.this.placeholderVars));
                             }
                             else {
                                 if (typeof this.this[string.substr(minIndex, cUpNumber)] === 'string') {
-                                    string = string.replace(regexFn, fn(this.this[string.substr(minIndex, cUpNumber)]));
+                                    string = string.replace(string.substr(index, length1 + cUpNumber + 3), fn(this.this[string.substr(minIndex, cUpNumber)]));
                                 }
                                 else {
-                                    string = string.replace(regexFn, fn(string.substr(minIndex, cUpNumber)));
+                                    string = string.replace(string.substr(index, length1 + cUpNumber + 3), fn(string.substr(minIndex, cUpNumber)));
                                 }
                             }
                         }

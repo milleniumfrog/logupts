@@ -1,6 +1,6 @@
 # LogUpTs 
 
-Version: 1.0.9
+Version: 1.0.12
 
 LogUpTs is an extendable class, which logs your message with a generated prefix and postfix. The prefix and postfix strings have the possibility to add Placeholder that will be replaced when the script executes. For example, you log 'hello world' with the following prefix: '{{month}}:{{year}} {{service()}}'. The result would be '03:2018 [LOG] hello world'.
 In Nodejs you can also save your log to different files.
@@ -16,9 +16,9 @@ install it via npm
 npm install --save logupts
 ```
 or use the following links
-- https://dev.milleniumfrog.de/cdn/logupts/1.0.9/browser/logupts.js for including via \<script src=\"\"\>
-- https://dev.milleniumfrog.de/cdn/logupts/1.0.9/umd/logupts for including via AMD
-- https://dev.milleniumfrog.de/cdn/logupts/1.0.9/es2015/logupts.js for including as es2015 Module
+- https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/logupts.js for including via \<script src=\"\"\>
+- https://dev.milleniumfrog.de/cdn/logupts/1.0.12/umd/logupts.js for including via AMD
+- https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/es2015/logupts.js for including as es2015 Module
 
 # Setup LogUpTs <a name="setup"></a>
 
@@ -44,7 +44,7 @@ logger.custom("BSP ", "", "this is a custom message") // log a message with cust
 ## Browser
 ### Without module loader
 ```html
-<script src="https://dev.milleniumfrog.de/cdn/logupts/1.0.9/browser/logupts.js"></script>
+<script src="https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/logupts.js"></script>
 ```
 ```javascript
 let logger = new logupts.LogUpTs();
@@ -60,8 +60,8 @@ logger.custom('[{{day}}] ', '', 'this is a custom message');
 ```javascript
 require.config({
     paths: {
-        cdn: 'https://dev.milleniumfrog.de/cdn/logupts/1.0.9/umd'
-        // or cdn: 'https://dev.milleniumfrog.de/cdn/logupts/1.0.9/browser/amd'
+        cdn: 'https://dev.milleniumfrog.de/cdn/logupts/1.0.12/umd'
+        // or cdn: 'https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/amd'
     }
 });
 require(["cdn/logupts"], (logupts, chai) => {
@@ -82,7 +82,7 @@ index.html
 ```
 index.js
 ```javascript
-import { LogUpTs } from 'https://dev.milleniumfrog.de/cdn/logupts/1.0.9/browser/es2015/logupts.js';
+import { LogUpTs } from 'https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/es2015/logupts.js';
 let logger = new LogUpTs(); // create your logger object
 logger.log("hello world") // log to console
 logger.info("this is an info") // log an info to console
