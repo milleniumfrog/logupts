@@ -1,51 +1,31 @@
+import { LogUpTs } from 'logupts';
 export class Placeholder {
-    public replacer: string;
+    constructor(
+        public key: string,
+        public replaceVar: string | ((logObj: any, arrayStr?: string[]) => string)
+    ) {
+        // debugger logger !TODO
+    }
     /**
-     * the replacerFn sould check the param for being a string or not
+     * 
+     * @param logObj 
+     * @param string 
      */
-    public replacerFn: ((string: string | any) => string);
-    constructor (
-        public key: string, 
-        replacerOrFn: string | ((any: any) => string) = "")  {
-            if (typeof replacerOrFn === 'string') {
-                this.replacer = replacerOrFn;
-                this.replacerFn = Placeholder.defaultFn;
-            } else {
-                this.replacerFn = replacerOrFn;
-                this.replacer = Placeholder.default;
-            }
+    replace(logObjPlaceholderVars: LogUpTs, string: string) {
+        // returns a value if replaceVar is a string
+        if (typeof this.replaceVar === 'string') {
+            return this.replaceVar;
+        }
+        if (string.length === 0) {
+            return this.replaceVar(logObjPlaceholderVars);
+        } else {
+            string = `[${string}]`;
+            return this.replaceVar(logObjPlaceholderVars, JSON.parse(string));
+        }
     }
-
-    ////////////////////////////////
-    ////// default fn //////////////
-    ////////////////////////////////
-    static default = "this placeholder doesn´t supports no Function";
-    static defaultFn (param: string | object) {
-        return ("this placeholder doesn´t supports functions");
-    }
-    static onlyString(param: any) {
-        if ((typeof param).toLowerCase() !== 'string')
-            throw new Error("this placeholder doesn´t supports functions without a string as param");
-    }
-
 }
 
-/**
- * contains following Placeholders
- * - String Placeholders
- *  - date
- *  - day
- *  - month
- *  - fullYear
- *  - hours
- *  - minutes
- *  - seconds
- *  - frog
- * - Function()
- *  - service
- * - Function(withParam)
- */
-export let Placeholders: {[str: string]: Placeholder} = {
+export let defaultPlaceholders = {
     date: new Placeholder('date', `${fillStrWithZeros(2, String((new Date()).getDate()))}`),
     day: new Placeholder('day', `${fillStrWithZeros(2, String((new Date()).getDay()))}`),
     month: new Placeholder('month', `${fillStrWithZeros(2, String((new Date()).getMonth()+1))}`),

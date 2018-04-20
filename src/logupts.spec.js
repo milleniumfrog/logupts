@@ -1,0 +1,3 @@
+describe('LOGUPTS-SPEC-JS', () => {
+    
+})

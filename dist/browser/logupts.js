@@ -257,3 +257,4 @@ var logupts = (function (exports) {
     return exports;
 
 }({}));
+window.logupts = logupts;
