@@ -1,0 +1,25 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Mocha Tests</title>
+    <link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="mocha"></div>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+
+    <script>mocha.setup('bdd')</script>
+    <script type="module" crossorigin="anonymous">
+        import { LogUpTs, Placeholder, Runtime } from '../dist/browser/es2015/logupts.js';
+        window.Placeholder = Placeholder;
+        window.LogUpTs = LogUpTs;
+        window.Runtime = Runtime;
+    </script>
+    <script type="module" crossorigin="anonymous" src="./test.js">
+    </script>
+</body>
+
+</html>

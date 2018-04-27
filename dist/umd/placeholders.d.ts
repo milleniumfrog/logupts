@@ -1,19 +1,12 @@
-import { LogUpTs } from 'logupts';
 export declare class Placeholder {
     key: string;
-    replaceVar: string | ((logObj: any, arrayStr?: string[]) => string);
-    constructor(key: string, replaceVar: string | ((logObj: any, arrayStr?: string[]) => string));
-    replace(logObjPlaceholderVars: LogUpTs, string: string): string;
+    replacer: string;
+    replacerFn: ((string: string | any) => string);
+    constructor(key: string, replacerOrFn?: string | ((any: any) => string));
+    static default: string;
+    static defaultFn(param: string | object): string;
+    static onlyString(param: any): void;
 }
-export declare let defaultPlaceholders: {
-    date: Placeholder;
-    day: Placeholder;
-    month: Placeholder;
-    fullYear: Placeholder;
-    year: Placeholder;
-    hours: Placeholder;
-    minutes: Placeholder;
-    seconds: Placeholder;
-    frog: Placeholder;
-    service: Placeholder;
+export declare let Placeholders: {
+    [str: string]: Placeholder;
 };

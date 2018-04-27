@@ -1,22 +1,25 @@
 export class Placeholder {
-    constructor(key, replaceVar) {
+    constructor(key, replacerOrFn = "") {
         this.key = key;
-        this.replaceVar = replaceVar;
-    }
-    replace(logObjPlaceholderVars, string) {
-        if (typeof this.replaceVar === 'string') {
-            return this.replaceVar;
-        }
-        if (string.length === 0) {
-            return this.replaceVar(logObjPlaceholderVars);
+        if (typeof replacerOrFn === 'string') {
+            this.replacer = replacerOrFn;
+            this.replacerFn = Placeholder.defaultFn;
         }
         else {
-            string = `[${string}]`;
-            return this.replaceVar(logObjPlaceholderVars, JSON.parse(string));
+            this.replacerFn = replacerOrFn;
+            this.replacer = Placeholder.default;
         }
     }
+    static defaultFn(param) {
+        return ("this placeholder doesn´t supports functions");
+    }
+    static onlyString(param) {
+        if ((typeof param).toLowerCase() !== 'string')
+            throw new Error("this placeholder doesn´t supports functions without a string as param");
+    }
 }
-export let defaultPlaceholders = {
+Placeholder.default = "this placeholder doesn´t supports no Function";
+export let Placeholders = {
     date: new Placeholder('date', `${fillStrWithZeros(2, String((new Date()).getDate()))}`),
     day: new Placeholder('day', `${fillStrWithZeros(2, String((new Date()).getDay()))}`),
     month: new Placeholder('month', `${fillStrWithZeros(2, String((new Date()).getMonth() + 1))}`),

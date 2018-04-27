@@ -1,4 +1,4 @@
-/* // test for runtime
+// test for runtime
 let runtime =
     (typeof module === 'object' && typeof module.exports === "object") ?
         'commonjs' :
@@ -236,4 +236,4 @@ function test(LogUpTs, path, expect, Placeholder, Runtime) {
     } else {
         mocha.run();
     }
-} */
+}
