@@ -3,16 +3,16 @@ export class Placeholder {
         this.key = key;
         this.replaceVar = replaceVar;
     }
-    replace(logObjPlaceholderVars, string) {
+    replace(logObjPlaceholderVars, param) {
         if (typeof this.replaceVar === 'string') {
             return this.replaceVar;
         }
-        if (string.length === 0) {
+        if (param.length === 0) {
             return this.replaceVar(logObjPlaceholderVars);
         }
         else {
-            string = `[${string}]`;
-            return this.replaceVar(logObjPlaceholderVars, JSON.parse(string));
+            param = `[${param}]`;
+            return this.replaceVar(logObjPlaceholderVars, JSON.parse(param));
         }
     }
 }
@@ -25,7 +25,7 @@ export let defaultPlaceholders = {
     hours: new Placeholder('hours', `${fillStrWithZeros(2, String((new Date()).getHours()))}`),
     minutes: new Placeholder('minutes', `${fillStrWithZeros(2, String((new Date()).getMinutes()))}`),
     seconds: new Placeholder('seconds', `${fillStrWithZeros(2, String((new Date()).getSeconds()))}`),
-    frog: new Placeholder('frog', 'milleniumfrog'),
+    frog: new Placeholder('frog', 'All Contributers: milleniumfrog'),
     service: new Placeholder('service', ((placeholderVars) => {
         return `[${placeholderVars.activeService}]`;
     })),

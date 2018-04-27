@@ -10,8 +10,9 @@
     "doc": "typedoc --out ./doc ./src",
     "watchUMD": "tsc -p ./config/tsconfig.umd.json --watch",
     "watchES2015": "tsc -p ./config/tsconfig.es2015.json --watch",
-    "watch": "sh ./shellscripts/watchall.sh"
-  },
+    "watch": "sh shellscripts/watchall.sh",
+    "buildtest": "sh shellscripts/buildtest.sh"
+ },
   "repository": {
     "type": "git",
     "url": "https://github.com/milleniumfrog/logupts"

@@ -3,7 +3,7 @@ export declare class Placeholder {
     key: string;
     replaceVar: string | ((logObj: any, arrayStr?: string[]) => string);
     constructor(key: string, replaceVar: string | ((logObj: any, arrayStr?: string[]) => string));
-    replace(logObjPlaceholderVars: LogUpTs, string: string): string;
+    replace(logObjPlaceholderVars: LogUpTs, param: string): string;
 }
 export declare let defaultPlaceholders: {
     date: Placeholder;
