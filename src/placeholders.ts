@@ -5,13 +5,16 @@ export class Placeholder {
         public replaceVar: string | ((logObj: any, arrayStr?: string[]) => string)
     ) {
         // debugger logger !TODO
+        for (let i in this) {
+            console.log(i);
+        }
     }
     /**
      * 
      * @param logObj 
      * @param string 
      */
-    replace(logObjPlaceholderVars: LogUpTs, param: string) {
+    public replace(logObjPlaceholderVars: LogUpTs, param: string) {
         // returns a value if replaceVar is a string
         if (typeof this.replaceVar === 'string') {
             return this.replaceVar;

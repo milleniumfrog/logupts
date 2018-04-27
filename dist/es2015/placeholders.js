@@ -2,6 +2,9 @@ export class Placeholder {
     constructor(key, replaceVar) {
         this.key = key;
         this.replaceVar = replaceVar;
+        for (let i in this) {
+            console.log(i);
+        }
     }
     replace(logObjPlaceholderVars, param) {
         if (typeof this.replaceVar === 'string') {
