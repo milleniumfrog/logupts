@@ -30,16 +30,11 @@ export type text = Array<string> | string;
 
 export interface InternalLogUpTsOptions {
     activeService?: string;
-    transportOptions? :TransportOptions;
 }
 
 export interface Transport {
-    exec: (transportOptions: TransportOptions, str: string) => Promise<any>;
+    exec: (transportOptions: InternalLogUpTsOptions, str: string) => Promise<any>;
     key: string;
-}
-
-export interface TransportOptions {
-
 }
 
 export class LogUpTs {
@@ -229,7 +224,7 @@ export class LogUpTs {
             let tran: Transport[] = opt.transports || [];
             // add Transport promises
             for(let transport of tran) {
-                promArr.push(transport.exec(internalOptions.transportOptions || {}, str))
+                promArr.push(transport.exec(internalOptions || {}, str))
             }
             // add async Task promises
             for(let asyncTask of opt.customAsyncExecutions || []) {
