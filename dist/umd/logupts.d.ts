@@ -16,6 +16,7 @@ export interface LogUpTsOptions {
 export declare type text = Array<string> | string;
 export interface InternalLogUpTsOptions {
     activeService?: string;
+    groups?: Array<string>;
 }
 export interface Transport {
     exec: (transportOptions: InternalLogUpTsOptions, str: string) => Promise<any>;
@@ -26,6 +27,7 @@ export declare class LogUpTs {
     protected placeholderVars: any;
     constructor(newLogUpTsOptions?: LogUpTsOptions);
     generateString(string: string): string;
+    static generateString(logupts: LogUpTs, string: string): string;
     protected defaultLogUpTsOptions(): LogUpTsOptions;
     protected mergeStringArray(textArr: text[]): string;
     protected prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions;

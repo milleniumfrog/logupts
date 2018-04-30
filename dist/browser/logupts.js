@@ -63,6 +63,15 @@ var logupts = (function (exports) {
             }
             return string;
         }
+        static generateString(logupts, string) {
+            string = string || '';
+            let placeholders = logupts.loguptsOptions.placeholders || {};
+            for (let propName in placeholders) {
+                let regexDefault = new RegExp(`{{${placeholders[propName].key}}}`, 'gi');
+                string = string.replace(regexDefault, placeholders[propName].replace(logupts.placeholderVars, ''));
+            }
+            return string;
+        }
         defaultLogUpTsOptions() {
             return {
                 praefix: '{{service}} ',
