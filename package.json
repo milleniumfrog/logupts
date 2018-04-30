@@ -11,8 +11,8 @@
     "watchUMD": "tsc -p ./config/tsconfig.umd.json --watch",
     "watchES2015": "tsc -p ./config/tsconfig.es2015.json --watch",
     "watch": "sh shellscripts/watchall.sh",
-    "buildtest": "sh shellscripts/buildtest.sh"
- },
+    "buildtest": "sh shellscripts/buildtest.sh"  
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/milleniumfrog/logupts"
@@ -34,7 +34,8 @@
     "requirejs": "^2.3.5",
     "rollup": "^0.57.1",
     "typedoc": "^0.11.1",
-    "typescript": "^2.7.1"
+    "typescript": "^2.7.1",
+    "uglify-es": "^3.3.9"
   },
   "dependencies": {}
 }
