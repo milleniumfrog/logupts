@@ -5,9 +5,6 @@ var logupts = (function (exports) {
         constructor(key, replaceVar) {
             this.key = key;
             this.replaceVar = replaceVar;
-            for (let i in this) {
-                console.log(i);
-            }
         }
         replace(logObjPlaceholderVars, param) {
             if (typeof this.replaceVar === 'string') {
@@ -51,12 +48,7 @@ var logupts = (function (exports) {
     const DEBUG = true;
     class LogUpTs {
         constructor(newLogUpTsOptions = {}) {
-            this.loguptsOptions = {
-                praefix: '{{service}} ',
-                postfix: '',
-                placeholders: defaultPlaceholders,
-                quiet: false,
-            };
+            this.loguptsOptions = this.defaultLogUpTsOptions();
             this.placeholderVars = {
                 activeService: 'LOG'
             };
@@ -70,6 +62,17 @@ var logupts = (function (exports) {
                 string = string.replace(regexDefault, placeholders[propName].replace(this.placeholderVars, ''));
             }
             return string;
+        }
+        defaultLogUpTsOptions() {
+            return {
+                praefix: '{{service}} ',
+                postfix: '',
+                placeholders: defaultPlaceholders,
+                quiet: false,
+                transports: [],
+                customAsyncExecutions: [],
+                customExecutions: [],
+            };
         }
         mergeStringArray(textArr) {
             let str = '';
@@ -95,7 +98,7 @@ var logupts = (function (exports) {
                 return this.loguptsOptions;
             }
             else {
-                let opt = this.deepClone(this.loguptsOptions);
+                let opt = this.copyLotUpTsOptions(this.loguptsOptions);
                 for (let propKey in logUpTsOptions) {
                     opt[propKey] = logUpTsOptions[propKey];
                 }
@@ -103,23 +106,55 @@ var logupts = (function (exports) {
             }
         }
         mergeLogUpTsOptions(a, b) {
-            let opt = this.deepClone(a);
+            let opt = this.copyLotUpTsOptions(a);
             for (let propKey in b) {
                 opt[propKey] = b[propKey];
             }
             return opt;
         }
-        deepClone(obj) {
-            let clone = {};
-            for (let i in obj) {
-                if (typeof (obj[i]) == "object" && obj[i] != null) {
-                    clone[i] = this.deepClone(obj[i]);
-                }
-                else {
-                    clone[i] = obj[i];
+        copyLotUpTsOptions(logUpTsOptions) {
+            let opt = this.defaultLogUpTsOptions();
+            for (let i in logUpTsOptions) {
+                switch (i) {
+                    case 'placeholders':
+                        let newPlc = {};
+                        let p = opt.placeholders || {};
+                        let pNew = logUpTsOptions.placeholders || {};
+                        for (let i in p) {
+                            newPlc[i] = new Placeholder(i, p[i].replaceVar);
+                        }
+                        for (let i in pNew) {
+                            newPlc[i] = new Placeholder(i, pNew[i].replaceVar);
+                        }
+                        opt.placeholders = newPlc;
+                        break;
+                    case 'transports':
+                        let copyTrans = (opt.transports || []).slice(0);
+                        let newTrans = logUpTsOptions.transports || [];
+                        for (let i of newTrans) {
+                            copyTrans.push(i);
+                        }
+                        opt.transports = copyTrans;
+                        break;
+                    case 'customExecutions':
+                        let copyExec = (opt.customExecutions || []).slice(0);
+                        for (let i of logUpTsOptions.customExecutions || []) {
+                            copyExec.push(i);
+                        }
+                        opt.customExecutions = copyExec;
+                        break;
+                    case 'customAsyncExecutions':
+                        let copyAsyncExec = (opt.customAsyncExecutions || []).slice(0);
+                        for (let i of logUpTsOptions.customAsyncExecutions || []) {
+                            copyAsyncExec.push(i);
+                        }
+                        opt.customAsyncExecutions = copyAsyncExec;
+                        break;
+                    default:
+                        opt[i] = logUpTsOptions[i];
                 }
             }
-            return clone;
+            return opt;
         }
         execInternalOptions(internalOptions) {
             for (let key in internalOptions) {
@@ -136,6 +171,9 @@ var logupts = (function (exports) {
             let str = opt.praefix + this.mergeStringArray(messages)
                 + opt.postfix;
             str = this.generateString(str);
+            for (let i of opt.customExecutions || []) {
+                i();
+            }
             if (!opt.quiet)
                 console.log(str);
             if ((opt.transports || []).length === 0 && (opt.customAsyncExecutions || []).length === 0) {
@@ -143,7 +181,8 @@ var logupts = (function (exports) {
             }
             else {
                 let promArr = [];
-                for (let transport of opt.transports || []) {
+                let tran = opt.transports || [];
+                for (let transport of tran) {
                     promArr.push(transport.exec(internalOptions || {}, str));
                 }
                 for (let asyncTask of opt.customAsyncExecutions || []) {
@@ -190,7 +229,7 @@ var logupts = (function (exports) {
         custom(praefix, postfix, loguptsOptions, ...message) {
             let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
             let internalOptions = {
-                activeService: "INFO",
+                activeService: "CUSTOM",
                 groups: ['ALL', 'CUSTOM', praefix]
             };
             opt.praefix = praefix;

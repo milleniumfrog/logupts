@@ -16,23 +16,22 @@ export interface LogUpTsOptions {
 export declare type text = Array<string> | string;
 export interface InternalLogUpTsOptions {
     activeService?: string;
-    transportOptions?: TransportOptions;
 }
 export interface Transport {
-    exec: (transportOptions: TransportOptions, str: string) => Promise<any>;
-}
-export interface TransportOptions {
+    exec: (transportOptions: InternalLogUpTsOptions, str: string) => Promise<any>;
+    key: string;
 }
 export declare class LogUpTs {
-    loguptsOptions: LogUpTsOptions;
-    placeholderVars: any;
+    protected loguptsOptions: LogUpTsOptions;
+    protected placeholderVars: any;
     constructor(newLogUpTsOptions?: LogUpTsOptions);
     generateString(string: string): string;
-    private mergeStringArray(textArr);
-    private prepareLogUpTsOptions(logUpTsOptions, messageArr?);
-    private mergeLogUpTsOptions(a, b);
-    private deepClone(obj);
-    execInternalOptions(internalOptions: InternalLogUpTsOptions): void;
+    protected defaultLogUpTsOptions(): LogUpTsOptions;
+    protected mergeStringArray(textArr: text[]): string;
+    protected prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions;
+    protected mergeLogUpTsOptions(a: LogUpTsOptions, b: LogUpTsOptions): LogUpTsOptions;
+    protected copyLotUpTsOptions(logUpTsOptions: LogUpTsOptions): LogUpTsOptions;
+    protected execInternalOptions(internalOptions: InternalLogUpTsOptions): void;
     internal(loguptsOptions: LogUpTsOptions, internalOptions: InternalLogUpTsOptions, ...messages: text[]): string | Promise<string>;
     log(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
     warn(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
