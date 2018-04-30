@@ -20,5 +20,25 @@ describe('LOGUPTS-SPEC-JS', () => {
 			let str = logger.log("hello world");
 			chai.expect(str).equals('[LOG] hello world');
 		})
+		it('error', () => {
+			let logger = new logupts.LogUpTs({quiet: true});
+			let str = logger.error((new Error("this is an error").message));
+			chai.expect(str).equals('[ERROR] this is an error');
+		})
+		it('info', () => {
+			let logger = new logupts.LogUpTs({quiet: true});
+			let str = logger.info("hello world");
+			chai.expect(str).equals('[INFO] hello world');
+		})
+		it('warn', () => {
+			let logger = new logupts.LogUpTs({quiet: true});
+			let str = logger.warn("hello world");
+			chai.expect(str).equals('[WARN] hello world');
+		})
+		it('custom', () => {
+			let logger = new logupts.LogUpTs({quiet: true});
+			let str = logger.custom('{{frog}}; ', '', "hello world");
+			chai.expect(str).equals('All Contributers: milleniumfrog; hello world');
+		})
 	})
 })

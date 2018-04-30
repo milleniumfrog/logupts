@@ -18,6 +18,7 @@ export interface LogUpTsOptions {
     placeholders?: { [str: string]: Placeholder };
     /** quiet mode -- diable all console.logs */
     quiet?: boolean;
+    /** transport layer */
     transports?: Transport[];
     /** executes in internal function */
     customExecutions?: ((...params: any[]) => any)[];
@@ -34,6 +35,7 @@ export interface InternalLogUpTsOptions {
 
 export interface Transport {
     exec: (transportOptions: TransportOptions, str: string) => Promise<any>;
+    key: string;
 }
 
 export interface TransportOptions {
@@ -41,15 +43,10 @@ export interface TransportOptions {
 }
 
 export class LogUpTs {
-    public loguptsOptions: LogUpTsOptions;
-    public placeholderVars: any;
+    protected loguptsOptions: LogUpTsOptions;
+    protected placeholderVars: any;
     constructor(newLogUpTsOptions: LogUpTsOptions = {}) {
-        this.loguptsOptions = {
-            praefix: '{{service}} ',
-            postfix: '',
-            placeholders: defaultPlaceholders,
-            quiet: false,
-        }
+        this.loguptsOptions = this.defaultLogUpTsOptions();
         this.placeholderVars = {
             activeService: 'LOG'
         }
@@ -75,11 +72,23 @@ export class LogUpTs {
         return string;
     }
 
+    protected defaultLogUpTsOptions():LogUpTsOptions {
+        return {
+            praefix: '{{service}} ',
+            postfix: '',
+            placeholders: defaultPlaceholders,
+            quiet: false,
+            transports: [],
+            customAsyncExecutions: [],
+            customExecutions: [],
+        };
+    }
+
     /** get a text Array 
      * @param {text[]} textArr 
      * @returns {string}
     */
-    private mergeStringArray(textArr: text[]): string {
+    protected mergeStringArray(textArr: text[]): string {
         let str = '';
         for (let strPart of textArr) {
             if (typeof strPart !== 'string') {
@@ -90,7 +99,7 @@ export class LogUpTs {
         return str;
     }
 
-    private prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions {
+    protected prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions {
         // if its a string 
         if (typeof logUpTsOptions === 'string') {
             if (messageArr === undefined)
@@ -105,7 +114,7 @@ export class LogUpTs {
             return this.loguptsOptions;
         // if its a LogupTsOptions Object
         } else {
-            let opt: LogUpTsOptions = this.deepClone(this.loguptsOptions);
+            let opt: LogUpTsOptions = this.copyLotUpTsOptions(this.loguptsOptions);
             for (let propKey in logUpTsOptions) {
                 opt[propKey] = logUpTsOptions[propKey];
             }
@@ -118,28 +127,64 @@ export class LogUpTs {
      * @param a 
      * @param b should be a logOptions object that gets destroyed or not used
      */
-    private mergeLogUpTsOptions(a: LogUpTsOptions, b: LogUpTsOptions): LogUpTsOptions {
-        let opt: LogUpTsOptions = this.deepClone(a);
+    protected mergeLogUpTsOptions(a: LogUpTsOptions, b: LogUpTsOptions): LogUpTsOptions {
+        let opt: LogUpTsOptions = this.copyLotUpTsOptions(a);
         for (let propKey in b) {
             opt[propKey] = b[propKey];
         }
         return opt;
     }
 
-    // TODO replace deepclone with copyconstructor of LogUpTsOptions
-    private deepClone(obj: LogUpTsOptions): LogUpTsOptions {
-        let clone: LogUpTsOptions = {};
-        for(let i in obj) {
-            if (typeof(obj[i])=="object" && obj[i] != null) {
-                clone[i] = this.deepClone(obj[i]);
-            } else {
-                clone[i] = obj[i];
+    /**
+     * copy loguptsOptions
+     * @param logUpTsOptions 
+     */
+    protected copyLotUpTsOptions(logUpTsOptions: LogUpTsOptions): LogUpTsOptions {
+        let opt: LogUpTsOptions = this.defaultLogUpTsOptions();
+        for (let i in logUpTsOptions) {
+            switch(i) {
+                case 'placeholders':
+                    let newPlc: any = {};
+                    let p = opt.placeholders || {};
+                    let pNew = logUpTsOptions.placeholders || {};
+                    for (let i in p) {
+                        newPlc[i] = new Placeholder(i, p[i].replaceVar);
+                    }
+                    for (let i in pNew) {
+                        newPlc[i] = new Placeholder(i, pNew[i].replaceVar);
+                    }
+                    opt.placeholders = newPlc;
+                    break;
+                case 'transports': 
+                    let copyTrans: Transport[] = (opt.transports || []).slice(0);
+                    let newTrans = logUpTsOptions.transports || [];
+                    for (let i of newTrans) {
+                        copyTrans.push(i);
+                    }
+                    opt.transports = copyTrans;
+                    break;
+                case 'customExecutions':
+                    let copyExec = (opt.customExecutions || []).slice(0);
+                    for (let i of logUpTsOptions.customExecutions || []) {
+                        copyExec.push(i);
+                    }
+                    opt.customExecutions = copyExec;
+                    break;
+                case 'customAsyncExecutions':
+                    let copyAsyncExec = (opt.customAsyncExecutions || []).slice(0);
+                    for (let i of logUpTsOptions.customAsyncExecutions || []) {
+                        copyAsyncExec.push(i);
+                    }
+                    opt.customAsyncExecutions = copyAsyncExec;
+                    break;
+                default: 
+                    opt[i] = logUpTsOptions[i];
             }
         }
-        return clone;
+        return opt;
     }
 
-    public execInternalOptions(internalOptions: InternalLogUpTsOptions) {
+    protected execInternalOptions(internalOptions: InternalLogUpTsOptions) {
         for(let key in internalOptions) {
             switch(key){
                 case "activeService":
@@ -168,18 +213,23 @@ export class LogUpTs {
         let str = opt.praefix + this.mergeStringArray(messages)
             + opt.postfix;
         str = this.generateString(str);
+        // execute sync Functions
+        for (let i of opt.customExecutions || []) {
+            i();
+        }
         // log to console
         if (!opt.quiet)
             console.log(str);
-        if ((opt.transports || []).length === 0 && (opt.customAsyncExecutions || []).length === 0){
+        if ((opt.transports || []).length === 0 && (opt.customAsyncExecutions || []).length === 0){
             return str;
         }
         else {
             // collect all Promises in one Array
             let promArr: Promise<any>[] = [];
+            let tran: Transport[] = opt.transports || [];
             // add Transport promises
-            for(let transport of opt.transports || []) {
-                promArr.push(transport.exec(internalOptions || {}, str));
+            for(let transport of tran) {
+                promArr.push(transport.exec(internalOptions.transportOptions || {}, str))
             }
             // add async Task promises
             for(let asyncTask of opt.customAsyncExecutions || []) {
@@ -259,7 +309,7 @@ export class LogUpTs {
     public custom (praefix:string, postfix:string, loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string> {
         let opt: LogUpTsOptions= this.prepareLogUpTsOptions(loguptsOptions, message);
         let internalOptions = {
-            activeService: "INFO",
+            activeService: "CUSTOM",
             groups: ['ALL', 'CUSTOM', praefix]
         };
         opt.praefix = praefix;

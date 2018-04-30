@@ -4,10 +4,6 @@ export class Placeholder {
         public key: string,
         public replaceVar: string | ((logObj: any, arrayStr?: string[]) => string)
     ) {
-        // debugger logger !TODO
-        for (let i in this) {
-            console.log(i);
-        }
     }
     /**
      * 
