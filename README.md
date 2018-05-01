@@ -1,234 +1,150 @@
-# LogUpTs 
+# LogUpTs v2
 
-Version: 1.0.12
+Version: 2.0.x
 
-LogUpTs is an extendable class, which logs your message with a generated prefix and postfix. The prefix and postfix strings have the possibility to add Placeholder that will be replaced when the script executes. For example, you log 'hello world' with the following prefix: '{{month}}:{{year}} {{service()}}'. The result would be '03:2018 [LOG] hello world'.
-In Nodejs you can also save your log to different files.
+LogUpTs is an extendable class, which logs your messages with a customizable prefix and postfix to your console. A template system and a few predefined placeholders enable you to create timestamps with an easy syntax like this: "{{date}}:{{month}}:{{fullYear}}"=>"30.04.2018". You are also able to extend the placeholders with redefinitions and new ones. If you want to store the logs, the class has a transport layer which enables you to use plugins to save or send the log data. In this repository is the plugin logupts-transport-file included.
 
 - [install logupts](#install)
 - [setup](#setup)
-- [extend](#extend)
+- [configuration](#config)
+- extend LogUpTs (will follow soon)
 
-# install logupts <a name="install"></a>
-
-install it via npm 
+# install <a name="install"></a>
 ```bash
-npm install --save logupts
+npm i logupts --save
 ```
-or use the following links
-- https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/logupts.js for including via \<script src=\"\"\>
-- https://dev.milleniumfrog.de/cdn/logupts/1.0.12/umd/logupts.js for including via AMD
-- https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/es2015/logupts.js for including as es2015 Module
+or use one of this links: 
+- no module loader: https://dev.milleniumfrog.de/cdn/logupts/2.0.0/browser/logupts.min.js
+- require.js: https://dev.milleniumfrog.de/cdn/logupts/2.0.0/browser/logupts.amd.min.js
+- es2015 modules: https://dev.milleniumfrog.de/cdn/logupts/2.0.0/browser/logupts.es2015.min.js
 
-# Setup LogUpTs <a name="setup"></a>
+# setup <a name="setup"></a>
+You can use the module in typescript and javascript.
 
-## Typescript
-```javascript
-import { LogUpTs, ILogUpTsOptions } from 'logupts';
+typescript default:
+```typescript
+import { LogUpTs } from 'logupts';
 let logger:LogUpTs = new LogUpTs();
 ```
-
-## Nodejs
-
-```javascript
-let LogUpTs = require('logupts/dist/umd/logupts').LogUpTs // import the LogUpTs class
-let logger = new LogUpTs(); // create your logger object
-logger.log("hello world") // log to console
-logger.info("this is an info") // log an info to console
-logger.error("this is an error") // or
-logger.error((new Error("this is also an error"))) // log an error
-logger.custom("BSP ", "", "this is a custom message") // log a message with custom praefix and postfix
+typescript umd/commonjs/amd as module system:
+```typescript
+import { LogUpTs } from 'logupts/dist/umd/logupts';
+let logger:LogUpTs = new LogUpTs();
 ```
-[Click here for an example](https://runkit.com/embed/kudu66eglz9n) 
-
-## Browser
-### Without module loader
-```html
-<script src="https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/logupts.js"></script>
-```
+javascript nodejs:
 ```javascript
+let logupts = require('logupts/dist/umd/logupts');
 let logger = new logupts.LogUpTs();
-logger.log("this is a log");
-logger.info("this is an info");
-logger.error("this is an error");
-logger.error(new Error("this is also an error"));
-logger.custom('[CUSTOM] ', '', 'this is a custom message');
-logger.custom('[{{day}}] ', '', 'this is a custom message');
 ```
-[Click here for an example](http://plnkr.co/edit/9TAGQmipjFNVWUtHVa9X?p=preview)
-### AMD
+javascript amd browser:
 ```javascript
 require.config({
     paths: {
-        cdn: 'https://dev.milleniumfrog.de/cdn/logupts/1.0.12/umd'
-        // or cdn: 'https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/amd'
+        cdn: "https://dev.milleniumfrog.de/cdn/logupts/2.0.0/browser"
     }
 });
-require(["cdn/logupts"], (logupts, chai) => {
-    let logger = new logupts.LogUpTs(); // create your logger object
-    logger.log("hello world") // log to console
-    logger.info("this is an info") // log an info to console
-    logger.error("this is an error") // or
-    logger.error((new Error("this is also an error"))) // log an error
-    logger.custom("AMD ", "", "this is a custom message") // log a message withcustom praefix and postfix
-    logger.custom("[AMD] ", "", "this is a custom message") // log a message withcustom praefix and postfix
-    logger.custom("{{day}} ", "", "this is a custom message") // log a messagewith custom praefix and postfix
-});
-```
-### ES2015 Modules
-index.html
-```HTML
-<script type="module" src="index.js"></script>
-```
-index.js
-```javascript
-import { LogUpTs } from 'https://dev.milleniumfrog.de/cdn/logupts/1.0.12/browser/es2015/logupts.js';
-let logger = new LogUpTs(); // create your logger object
-logger.log("hello world") // log to console
-logger.info("this is an info") // log an info to console
-...
-```
-
-[Click here for an expamle with AMD and ES2015 Module](http://plnkr.co/edit/PC4upgfoKlcXZHxYhdSx?p=info)
-
-## Placeholders
-
-Placeholders are a predefined, but easy extendable, Group of words, which get replaced with predefined values or the returning value of a function. Placeholders are surrounded by double curly brackets. {{...}}
-A timestamp, for example, would be '{{day}}.{{month}}.{{fullYear}} {{hours}}:{{minutes}}', the result would be 01.04.2018 17:51. 
-
-The default Prefix is '{{service()}}'
-
-Timestamp placeholder
-- date
-- day
-- month
-- fullYear
-- hours
-- minutes
-- seconds
-
-(other Placeholders)
-- frog
-- service()
-
-internal placeholder variables
-- activeService
-
-## write logfiles (nodejs and mac/linux only)
-When you create an object you can setup your logfiles like this
-```javascript
-new LogUpTs({
-    quiet: true, // disable the output to console (default = false)
-    writeToFileSystem: true, // activate writing to File System
-    logFiles: [ // define log paths and what should get logged
-        {
-            identifier: "test",
-            path: path.resolve(__dirname, '../log/'), // absolute path !!!
-            fileName: 'test_{{year}}.log',
-            serviceToLog: ['ALL']
-        },
-        {
-            identifier: "test2",
-            path: path.resolve(__dirname, '../log/test2'),
-            fileName: 'test2_{{year}}.log',
-            serviceToLog: ['LOG']
-        }  
-    ]
-    })).log('hello world')
-        .then((finalString) => {
-            expect(finalString).to.equal('[LOG] hello world');
-        });
-```
-The code snippet above creates two files and logs everything in the first file and in the second file it only logs messages when the log-function is used. 
-As you can see you can include Placeholders in the Filename, but don't include Placeholders in the directory paths, this will not work. 
-If you want to log everything in your File just set serviceToLog to ['ALL']
-
-# Extend LogUpTs <a name="extend"></a>
-
-## create a new logging function with custom()
-To easiest way to extend the class is to use the custom() function. You can set a static prefix and postfix in a new function and pass a message from the new function to the message argument at the custom function. You could add the new function to an existing instance of LogupTs.
-This would look like this:
-```javascript
-let log = new LogUpTs();
-function newFunc(message) {
-    return log.custom('[newFunc] ', ' [/newFunc]', message);
-}
-log.newFunc = newFunc;
-```
-
-## manage the placeholders
-### replace the existing placeholders
-To replace the placeholders you need a new placeholder object and a 
-LogUpTs instance. Then you can replace the under 
-instance.logOptions.placeholders the default placeholder object with your new object.
-```javascript
-let newPlaceholder = {
-    r2d2: new Placeholder('r2d2', 'c3po')
-   }
-let log = new LogUpTs(quietOption);
-log.logOptions.placeholders = newPlaceholder;
-```
-
-### add new placeholders
-If you want to add new placeholders you can use the already existing placeholder object and add a new property. please use the same property name as your placeholder key (first argument of the Placeholder constructor), so can you avoid name collisions.
-```javascript
-let logger = new LogUpTs(quietOption);
-let placeholders = logger.logOptions.placeholders;
-placeholders.king = new Placeholder('king', (param) => {
-    try {
-        Placeholder.onlyString(param);
-    }
-    catch(err) {
-        throw err;
-    }
-    return param;
-});
-```
-### merge new with exsting placeholders
-```javascript
-let newPlaceholder = {
-    r2d2: new Placeholder('r2d2', 'c3po')
-}
-let log2 = new LogUpTs({
-    quiet: true,
-    placeholders: newPlaceholder
+require(['cdn/logupts.amd'], (loguptsAMD) => {
+	let logger = loguptsAMD.LogUpTs();
 })
 ```
-## newClass extends LogUpTs
+[example for amd/es2015/no module](https://codepen.io/milleniumfrog/pen/LmWqNO)
+
+# configuration <a name="config"></a>
+### custom prefix:
+The actual prefix is {{service}} and shows used function like log, error, warn ..., but sometimes you need something like a timestamp. You can assign a new string to the loguptsOptions.prefix variable like this.
 ```javascript
-class Log extends LogUpTs {
-    constructor(logOptions){
-        super(logOptions);
-    }
-    greet(name){
-        return "hello " + name;
-    }
-    debug(message, options){
-        let opt = options || this.logOptions;
-        this.placeholderVars.activeService = 'DEBUG'; // setze aktivenService auf Log
-        let outPut = this._generateStringOutOfPlaceholderString(opt.praefix) +
-            message +
-            this._generateStringOutOfPlaceholderString(opt.postfix);
-        // log to console
-        if (!opt.quiet)
-            console.log(outPut);
-        if (runtime !== Runtime.commonjs || !opt.writeToFileSystem)
-            return outPut;
-        // nodejs part
-        let toPrint = ['ALL', 'DEBUG'];
-        return this.genDirs.then(()=>{return this.node_allFiles(toPrint, outPut)});
-    }
-}
+let logger = new LogUpTs();
+logger.loguptsOptions.prefix = '{{fullYear}} {{service}} ';
+logger.log("hello") // 2018 [LOG] hello
+```
+As you can see, placeholders are useable.
+
+### custom postifx
+see custom prefix
+```javascript
+let logger = new LogUpTs();
+logger.loguptsOptions.postfix = ' {{fullYear}}';
+logger.log("hello") // [LOG] hello 2018
 ```
 
-## DOC
-You can create a documentation to the class with
-```bash
-npm run doc 
+### quiet
+if it shouldn´t log to console you can forbit it with the quiet option.
+```javascript
+let logger = new LogUpTs();
+logger.loguptsOptions.postfix = ' {{fullYear}}';
+logger.log("hello") // no output on console
 ```
-in the rootdir, its written in a mixture of german and english.
 
+### placeholders
+if you dont need all predefined placeholders you can delete a few.
+```javascript
+let logger = new LogUpTs();
+delete logger.loguptsOptions.placeholders.service;
+logger.log("hello") // {{service}} hello
+```
+or add new placeholders
+```javascript
+let logger = new LogUpTs();
+logger.loguptsOptions.placeholders.pu = new Placeholder('pu', 'world');
+logger.log("hello {{pu}}") // [LOG] hello world
+```
+or redefine an existing one
+```javascript
+let logger = new LogUpTs();
+logger.loguptsOptions.placeholders.service = new Placeholder('service', '[world]')
+logger.log("hello ") // [world] hello
+```
+### custom (async) function executions
+you can inject function that will executed whenever log-function is used.
+As example I implemented a counter
+```javascript
+let counter = 0;
+let logger = new LogUpTs();
+logger.loguptsOptions.customExecutions.push(() => {++counter});
+logger.log("hello") // [LOG] hello
+logger.log(String(counter))
+```
+if you use an asynchronous function the log-function will return a promise.
+```javascript
+let counter = 0;
+let logger = new LogUpTs();
+logger.loguptsOptions.customAsyncExecutions.push(() => {++counter; return Promise.resolve()});
+logger.log("hello") // [LOG] hello
+  .then(() => {
+  logger.log(String(counter))
+})
+```
 
+### transport plugins
+Without plugins LogUpTs will only log to your console, but with plugins you can log and store your
+log everywhere. For nodejs I already included a plugin which enables you to save your log to files.
+```typescript
+// typescript code for macos and linux (not for windows)
+import { LogUpTs } from 'logupts/dist/umd/logupts';
+import { LogUpTsTransportFile } from 'logupts/dist/umd/logupts-transport-file';
+import * as path from 'path';
+
+let logger = new LogUpTs();
+
+logger.loguptsOptions.transports = [
+	/** arguments:
+ 	 * 1: absoulte path where the files should get stored (without placeholders)
+	 * 2: filename (if you want with placeholders, the files get automatically generated)
+	 * 3: pass your LogUpTs instance to the plugin
+	 * 4: what should get logged (LOG, ERROR, WARN, INFO, ALL are possible)
+	 */
+	new LogUpTsTransportFile(path.resolve(__dirname, 'log'), 'test.log', logger, ['ALL'])
+]
+logger.log("hello");
+/** the file test.log appears with following content: 
+ * [LOG] hello
+ */ 
+```
+If you want to create your own transport plugin you have to create a class that implements the interface 
+Transport from the logupts module.
+Here you can look at the LogUpTsTransportFile-Plugin as [example](./src/logupts-transport-file.ts).
+
+# extend is WIP
 
 ### Author
 René Schwarzinger (milleniumfrog)

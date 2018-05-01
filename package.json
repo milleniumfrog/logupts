@@ -1,6 +1,6 @@
 {
   "name": "logupts",
-  "version": "1.0.12",
+  "version": "2.0.0",
   "description": "LogUpTs is an extendable class, which logs your message with a generated prefix and postfix. The prefix and postfix strings have the possibility to add Placeholder that will be replaced when the script executes. For example, you log 'hello world' with the following prefix: '{{month}}:{{year}} {{service(activeService)}}'. The result would be '03:2018 [LOG] hello world'. In Nodejs you can also save your log to diffrent files.",
   "main": "dist/es2015/logupts.js",
   "sourceMaps": "./map",
@@ -10,7 +10,8 @@
     "doc": "typedoc --out ./doc ./src",
     "watchUMD": "tsc -p ./config/tsconfig.umd.json --watch",
     "watchES2015": "tsc -p ./config/tsconfig.es2015.json --watch",
-    "watch": "sh ./shellscripts/watchall.sh"
+    "watch": "sh shellscripts/watchall.sh",
+    "buildtest": "sh shellscripts/buildtest.sh"
   },
   "repository": {
     "type": "git",
@@ -22,11 +23,19 @@
   "devDependencies": {
     "@types/node": "^9.6.1",
     "chai": "^4.1.2",
-    "mocha": "^5.0.0",
+    "karma": "^2.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-mocha": "^1.3.0",
+    "karma-opera-launcher": "^1.0.0",
+    "karma-requirejs": "^1.1.0",
+    "karma-safari-launcher": "^1.0.0",
+    "mocha": "^5.1.0",
     "requirejs": "^2.3.5",
     "rollup": "^0.57.1",
     "typedoc": "^0.11.1",
-    "typescript": "^2.7.1"
+    "typescript": "^2.7.1",
+    "uglify-es": "^3.3.9"
   },
   "dependencies": {}
 }

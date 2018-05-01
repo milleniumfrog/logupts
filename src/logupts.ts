@@ -1,421 +1,334 @@
-import { Placeholders, Placeholder } from './placeholders';
-// reexport
-export { Placeholders, Placeholder } from './placeholders';
-
-
-
-declare let define: any;
-declare let module: any;
-declare let require: any;
-
-export enum Runtime {
-    commonjs,
-    amd,
-    default
-}
-let runtime =
-    (typeof module === 'object' && typeof module.exports === "object") ?
-        Runtime.commonjs :
-        (typeof define === "function" && define.amd) ?
-            Runtime.amd :
-            Runtime.default;
-
-
-////////////////////////////////
-////// IMPORT //////////////////
-////////////////////////////////
-let fs: any, path: any;
-if (runtime === Runtime.commonjs) {
-    fs = require('fs');
-    path = require('path');
-} else {
-    fs = (() => { });
-    path = (() => { });
-}
-////////////////////////////////
-////// Interfaces //////////////
-////////////////////////////////
-
+// import placeholders
+import { Placeholder, defaultPlaceholders } from './placeholders';
+// export the Placeholderclass
+export { Placeholder, defaultPlaceholders }
+// export debuglevel for development
+export const DEBUG = true;
 
 /**
- * interface for the LogUpTs class and reimplementations
- * @interface
+ * configure your LogUpTs object with this options
  */
-export interface ILogUpTs {
-    [prop: string]: any
-    log: (msg: string, options?: ILogUpTsOptions) => string | Promise<string> | void;
-    error: (msg: string, options?: ILogUpTsOptions) => string | Promise<string>;
-    info: (msg: string, options?: ILogUpTsOptions) => string | Promise<string>;
-    custom: (praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, serviceName?: string) => string | Promise<string>;
-}
-
-/**
- * interface for the Logpath objects
- * where and what shouldt get written in the logfiles
- * @interface 
- */
-export interface IPaths {
-    identifier: string;
-    /** absolute path */
-    path: string;
-    fileName: string;
-    serviceToLog: Array<string>
-}
-
-/**
- * configure logupts
- * @interface
- */
-export interface ILogUpTsOptions {
+export interface LogUpTsOptions {
     [index: string]: any;
-    /** configure the praefix 
-     */
-    praefix?: string;
-    /**configure the postfix 
-     */
+    /** set a default prefix */
+    prefix?: string;
+    /** set a default postfix */
     postfix?: string;
-    /** a list of all placeholders */
+    /** set/configure the placeholders */
     placeholders?: { [str: string]: Placeholder };
-    /** log to console or dont */
+    /** quiet mode -- diable all console.logs */
     quiet?: boolean;
-    /** configure what and where should be saved */
-    logFiles?: Array<IPaths>;
-    /** @deprecated use writeToFileSystem instead */
-    writeToFile?: boolean;
-    /** activate writing the in logFiles configured files to filesystem (nodejs only) */
-    writeToFileSystem?: boolean;
+    /** transport layer */
+    transports?: Transport[];
+    /** executes in internal function */
+    customExecutions?: ((...params: any[]) => any)[];
+    /** executes in internal function, => always returns a promise */
+    customAsyncExecutions?: ((...params: any[]) => Promise<any>)[]
 }
 
+export type text = Array<string> | string;
 
-export class LogUpTs implements ILogUpTs {
-    /** 
-     * internal options
-     * @type {ILogUpTsOptions} 
-     */
-    public logOptions: ILogUpTsOptions;
-    /**
-     * variables that get passed to the placeholderfunctions
-     */
+export interface InternalLogUpTsOptions {
+    activeService?: string;
+    groups?: Array<string>
+}
+
+export interface Transport {
+    exec: (transportOptions: InternalLogUpTsOptions, str: string) => Promise<any>;
+    key: string;
+}
+
+export class LogUpTs {
+    public loguptsOptions: LogUpTsOptions;
     public placeholderVars: any;
-    /**
-     * make this accessable in ts without a type
-     */
-    private this: any;
-    public genDirs: any;
-    /**
-     * erstelle ein Object des Type Logts
-     * @param logOptions {ILogUpTsOptions}
-     */
-    constructor(logOptions?: ILogUpTsOptions) {
-        this.placeholderVars = {};
-        this.logOptions = {
-            placeholders: Placeholders,
-            praefix: '{{service()}} ',
-            postfix: '',
-            quiet: false,
-            logFiles: [],
-            /** @deprecated use writeToFileSystem instead */
-            writeToFile: false,
-            writeToFileSystem: false
+    constructor(newLogUpTsOptions: LogUpTsOptions = {}) {
+        this.loguptsOptions = this.defaultLogUpTsOptions();
+        this.placeholderVars = {
+            activeService: 'LOG'
         }
-        this.placeholderVars.activeService = 'LOG';
-        this.this = this;
-        if (logOptions)
-            this._mergeOptions(logOptions);
-        // get all paths
-        this.logOptions.logFiles = this.logOptions.logFiles ||  [];
-        let paths: Array<string> = [];
-        for (let logFile of this.logOptions.logFiles) {
-            paths.push(logFile.path);
-        }
-        // generate all files
-        this.genDirs = this.node_generateLogDir(paths);
-    };
+        this.loguptsOptions = this.mergeLogUpTsOptions(this.loguptsOptions, newLogUpTsOptions);
+    }
 
-    /**
-     * 
-     * @param str {string | undefined} der Platzhalterstring im Angular-stil {{wort}}
-     * @returns {string} replaces a string withe replaced placeholders
-     * @private
-     */
-    _generateStringOutOfPlaceholderString(str: string | undefined): string {
-        function cUp(param: string) {
+    public generateString(string: string): string {
+        function countUp(param: string) {
             for (let i = 0; i < param.length; ++i) {
                 if (param.substr(i, 3) === ')}}')
                     return i;
             }
             throw new Error('didnt close Placeholder');
         }
-        if (str === undefined)
-            return '';
-        else {
-            let string: string = str || '';
-            let placeholders = this.logOptions.placeholders || {};
-            for (let propName in placeholders) {
-                // replace defaults
-                let regexDefault = new RegExp(`{{${placeholders[propName].key}}}`, 'gi');
-                string = string.replace(regexDefault, placeholders[propName].replacer || '');
-                // replace functions
-                let regexFn = new RegExp(`{{${placeholders[propName].key}\((.{0,})\)}}`, 'i');
-                while (regexFn.exec(string)) { // falls ein Eintrag gefunden wurde
-                    let match = regexFn.exec(string) || { index: -1 };
-                    let index = match.index;
-                    if (index >= 0) { // wenn ein Eintrag gefunden wurde
-                        let length1 = `{{${placeholders[propName].key}(`.length;
-                        let minIndex = index + length1;
-                        let cUpStr = string.substr(minIndex);
-                        let fn: ((param?: string) => string) = placeholders[propName].replacerFn || (() => { return "help" });
-                        let cUpNumber = cUp(cUpStr);
-                        let checkReg = new RegExp('{{', 'gi');
-                        if (checkReg.exec(string.substr(minIndex, cUpNumber)) !== null) {
-                            continue;
-                        }
-                        if (cUpNumber === 0) {
-                            string = string.replace(string.substr(index, length1 + cUpNumber +3), fn(this.this.placeholderVars)); // ersetze Platzhalter durch Normalwert
-                        } else {
-                            if (typeof this.this[string.substr(minIndex, cUpNumber)] === 'string') {
-                                string = string.replace(string.substr(index, length1 + cUpNumber +3), fn(this.this[string.substr(minIndex, cUpNumber)])); // ersetze Wert durch Wert von fn(this[string])
-                            } else {
-                                string = string.replace(string.substr(index, length1 + cUpNumber +3), fn(string.substr(minIndex, cUpNumber))) // ersetze Wert durch durch Fn(string)
-                            }
-                        }
-                    }
-                };
+        string = string || '';
+        let placeholders = this.loguptsOptions.placeholders || {};
+        for (let propName in placeholders) {
+            let regexDefault = new RegExp(`{{${placeholders[propName].key}}}`, 'gi');
+            // DEBUG console.log(placeholders[propName]);
+            string = string.replace(regexDefault, placeholders[propName].replace(this.placeholderVars, ''))
+        }
+
+        return string;
+    }
+
+    static generateString(logupts: LogUpTs,string: string): string {
+        function countUp(param: string) {
+            for (let i = 0; i < param.length; ++i) {
+                if (param.substr(i, 3) === ')}}')
+                    return i;
             }
-            return string;
+            throw new Error('didnt close Placeholder');
         }
+        string = string || '';
+        let placeholders = logupts.loguptsOptions.placeholders || {};
+        for (let propName in placeholders) {
+            let regexDefault = new RegExp(`{{${placeholders[propName].key}}}`, 'gi');
+            // DEBUG console.log(placeholders[propName]);
+            string = string.replace(regexDefault, placeholders[propName].replace(logupts.placeholderVars, ''))
+        }
+
+        return string;
     }
 
-    ////////////////////////////////
-    ////// Private Funktionen //////
-    ////////////////////////////////
+    public defaultLogUpTsOptions():LogUpTsOptions {
+        return {
+            prefix: '{{service}} ',
+            postfix: '',
+            placeholders: defaultPlaceholders,
+            quiet: false,
+            transports: [],
+            customAsyncExecutions: [],
+            customExecutions: [],
+        };
+    }
 
-    /**
- * merge the options of the Object with new IILogUpTsOptions
- * @param newOptions {ILogUpTsOptions} Die mit einzubringenden Optionen
- * @returns {void} 
- * @private
- */
-    _mergeOptions(newOptions: ILogUpTsOptions) {
-        for (let key in newOptions) {
-            if (typeof this.logOptions[key] === 'object') {
-                this._mergeObjects(this.logOptions[key], newOptions[key]);
-            } else {
-                this.logOptions[key] = newOptions[key];
+    /** get a text Array 
+     * @param {text[]} textArr 
+     * @returns {string}
+    */
+    public mergeStringArray(textArr: text[]): string {
+        let str = '';
+        for (let strPart of textArr) {
+            if (typeof strPart !== 'string') {
+                strPart = this.mergeStringArray(strPart);
             }
+            str += strPart;
         }
+        return str;
     }
 
-    /**
-     * allgemeinere Form von mergeOptions
-     * @param currentObj {any}
-     * @param toAddObj {any}
-     * @returns {any} currentObj
-     * @private
-     */
-    _mergeObjects(currentObj: any, toAddObj: any) {
-        for (let key in toAddObj) {
-            currentObj[key] = toAddObj[key];
+    public prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions {
+        // if its a string 
+        if (typeof logUpTsOptions === 'string') {
+            if (messageArr === undefined)
+                throw new TypeError('if loguptsOptions is a string then the messageArr is needed');
+            messageArr.unshift(logUpTsOptions);
+            return this.loguptsOptions;
+        // it its undefined
+        } else if (logUpTsOptions === undefined) {
+            if (messageArr === undefined)
+                throw new TypeError('if loguptsOptions is a string then the messageArr is needed');
+            messageArr.unshift('');
+            return this.loguptsOptions;
+        // if its a LogupTsOptions Object
+        } else {
+            let opt: LogUpTsOptions = this.copyLotUpTsOptions(this.loguptsOptions);
+            for (let propKey in logUpTsOptions) {
+                opt[propKey] = logUpTsOptions[propKey];
+            }
+            return opt;
         }
-        return currentObj;
-    }
-
-    ////////////////////////////////
-    ////// Public Funktionen //////
-    ////////////////////////////////
-
-    /**
-     * Gebe deine Nachricht mit Praefix und Postfix in der Konsole aus. <br />
-     * Falls this.quiet === true dann wird nicht auf die Konsole ausgegben
-     * @param message {string} Deine Nachricht
-     * @param [options] {ILogUpTsOptions} 
-     * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
-     * @public
-     */
-    log(message: string, options?: ILogUpTsOptions): string | Promise<string> | void {
-        let opt = options || this.logOptions;
-        return this.internal(
-            this.logOptions.praefix || '{{service()}}',
-            this.logOptions.postfix || '',
-            'LOG',
-            ['ALL', 'LOG'],
-            message,
-            options, 'log'
-        )
-    }
-    /**
-     * Log a errormessage, generate a String with Prefix and Postfix, write
-     * @param message {string} Deine Nachricht
-     * @param [options] {ILogUpTsOptions} 
-     * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
-     * @public
-     */
-    error(message: string | Error, options?: ILogUpTsOptions): string | Promise<string> {
-        return this.internal(
-            this.logOptions.praefix || '{{service()}}',
-            this.logOptions.postfix || '',
-            'ERROR',
-            ['ALL', 'ERROR'],
-            message instanceof Error ? message.message : message,
-            options, 'error'
-        )
-    }
-
-    /**
-   * Log a errormessage, generate a String with Prefix and Postfix, write
-   * @param message {string} Deine Nachricht
-   * @param [options] {ILogUpTsOptions} 
-   * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
-   * @public
-   */
-    warn(message: string |  Error, options?: ILogUpTsOptions): string | Promise<string> {
-        return this.internal(
-            this.logOptions.praefix || '{{service()}}',
-            this.logOptions.postfix || '',
-            'WARN',
-            ['ALL', 'WARN'],
-            message instanceof Error ? message.message : message,
-            options, 'warn'
-        )
-    }
-
-    /**
- * Gebe deine Nachricht mit Praefix und Postfix in der Konsole aus als info. <br />
- * Falls this.quiet === true dann wird nicht auf die Konsole ausgegben
- * @param message {string} Deine Nachricht
- * @param [options] {ILogUpTsOptions} 
- * @return {string | Promise<string>} Promise nur wenn in Datei gespeichert wird.<br /> Es wird der erstellte String aus Praefix, Nachricht und Postfix zurückgegeben
- * @public
- */
-    info(message: string, options?: ILogUpTsOptions): string | Promise<string> {
-        return this.internal(
-            this.logOptions.praefix || '{{service()}}',
-            this.logOptions.postfix || '',
-            'INFO',
-            ['ALL', 'INFO'],
-            message, options, 'info'
-        )
     }
 
     /**
      * 
-     * @param praefix {string} add a custom praefix
-     * @param postfix {string} add a custom postfix
-     * @param message {string} Deine Nachricht
-     * @param logoptions 
+     * @param a 
+     * @param b should be a logOptions object that gets destroyed or not used
      */
-    custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, activeService?: string): string | Promise<string> {
-        let toPrint = ['ALL', 'CUSTOM', praefix];
-        return this.internal(praefix, postfix, activeService || 'CUSTOM',
-            toPrint, message, options);
+    public mergeLogUpTsOptions(a: LogUpTsOptions, b: LogUpTsOptions): LogUpTsOptions {
+        let opt: LogUpTsOptions = this.copyLotUpTsOptions(a);
+        for (let propKey in b) {
+            opt[propKey] = b[propKey];
+        }
+        return opt;
     }
 
-    // internal custom function
-    internal(praefix: string, postfix: string, activeService: string, toPrint: Array<string>,
-        message: string, options?: ILogUpTsOptions, consoleFunc: string = 'log'): string | Promise<string> {
-        let opt: ILogUpTsOptions = options || this.logOptions;
-        // set activeservice
-        this.placeholderVars.activeService = activeService;
-        // merge praefix message and postfix
-        let outPut = praefix + message + postfix;
-        outPut = this._generateStringOutOfPlaceholderString(outPut);
+    /**
+     * copy loguptsOptions
+     * @param logUpTsOptions 
+     */
+    public copyLotUpTsOptions(logUpTsOptions: LogUpTsOptions): LogUpTsOptions {
+        let opt: LogUpTsOptions = this.defaultLogUpTsOptions();
+        for (let i in logUpTsOptions) {
+            switch(i) {
+                case 'placeholders':
+                    let newPlc: any = {};
+                    let p = opt.placeholders || {};
+                    let pNew = logUpTsOptions.placeholders || {};
+                    for (let i in p) {
+                        newPlc[i] = new Placeholder(i, p[i].replaceVar);
+                    }
+                    for (let i in pNew) {
+                        newPlc[i] = new Placeholder(i, pNew[i].replaceVar);
+                    }
+                    opt.placeholders = newPlc;
+                    break;
+                case 'transports': 
+                    let copyTrans: Transport[] = (opt.transports || []).slice(0);
+                    let newTrans = logUpTsOptions.transports || [];
+                    for (let i of newTrans) {
+                        copyTrans.push(i);
+                    }
+                    opt.transports = copyTrans;
+                    break;
+                case 'customExecutions':
+                    let copyExec = (opt.customExecutions || []).slice(0);
+                    for (let i of logUpTsOptions.customExecutions || []) {
+                        copyExec.push(i);
+                    }
+                    opt.customExecutions = copyExec;
+                    break;
+                case 'customAsyncExecutions':
+                    let copyAsyncExec = (opt.customAsyncExecutions || []).slice(0);
+                    for (let i of logUpTsOptions.customAsyncExecutions || []) {
+                        copyAsyncExec.push(i);
+                    }
+                    opt.customAsyncExecutions = copyAsyncExec;
+                    break;
+                default: 
+                    opt[i] = logUpTsOptions[i];
+            }
+        }
+        return opt;
+    }
+
+    public execInternalOptions(internalOptions: InternalLogUpTsOptions) {
+        for(let key in internalOptions) {
+            switch(key){
+                case "activeService":
+                    this.placeholderVars.activeService = internalOptions.activeService;
+                    break;
+            }
+        }
+    }
+
+    /**
+     * do the magic in internal <br />
+     * - transforms the string <br /> 
+     * - logs to console <br />
+     * - start transport layer
+     * @param {LogUpTsOptions} loguptsOptions
+     * @param {InternalLogUpTsOptions} internalOptions 
+     * @param {text} messages
+     * @returns {string | Promise<string>} 
+     */
+    public internal(loguptsOptions: LogUpTsOptions, internalOptions :InternalLogUpTsOptions, ...messages:  text[]): string | Promise<string> {
+        // merge options parameter with internals
+        let opt = this.mergeLogUpTsOptions(this.loguptsOptions, loguptsOptions);
+        // execute something if its 
+        this.execInternalOptions(internalOptions);
+        // create string
+        let str = opt.prefix + this.mergeStringArray(messages)
+            + opt.postfix;
+        str = this.generateString(str);
+        // execute sync Functions
+        for (let i of opt.customExecutions || []) {
+            i();
+        }
         // log to console
-        if (!opt.quiet) {
-            switch (consoleFunc) {
-                case 'warn':
-                    console.warn(outPut);
-                    break;
-                case 'error':
-                    console.error(outPut);
-                    break;
-                case 'info':
-                    console.info(outPut);
-                    break;
-                default:
-                    console.log(outPut);
-            }
+        if (!opt.quiet)
+            console.log(str);
+        if ((opt.transports || []).length === 0 && (opt.customAsyncExecutions || []).length === 0){
+            return str;
         }
-        // return a string if runtime is not nodejs and if the writeToFileSystem is false
-        if (runtime !== Runtime.commonjs || !opt.writeToFileSystem)
-            return outPut;
-        else
-            return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
+        else {
+            // collect all Promises in one Array
+            let promArr: Promise<any>[] = [];
+            let tran: Transport[] = opt.transports || [];
+            // add Transport promises
+            for(let transport of tran) {
+                promArr.push(transport.exec(internalOptions || {}, str))
+            }
+            // add async Task promises
+            for(let asyncTask of opt.customAsyncExecutions || []) {
+                promArr.push(asyncTask());
+            }
+            // execute all Promises
+            return Promise.all(promArr)
+            .then(() => {
+                return str;
+            });
+        }
     }
 
-    ////////////////////////////////
-    ////// nur Nodejs //////////////
-    ////////////////////////////////
-
     /**
-     * create all Logfiles and fill them with the requestet content
-     * @param servicesToLog 
+     * console.log aequivalent
+     * @param loguptsOptions 
      * @param message 
-     * @param depth 
      */
-    node_allFiles(servicesToLog: Array<string>, message: string, depth: number = 0): Promise<string> {
-        let logFiles = this.logOptions.logFiles || [];
-        let foundServiceInIPathsServiceToLog: boolean = false;
-        // Lade identifier der logPaths
-        if (depth < logFiles.length) {
-            let idents: Array<string> = []; // erhalte alle Service Identifier
-            let k = logFiles[depth];
-            for (let l of k.serviceToLog) {
-                idents.push(l);
-            }
-            for (let service of servicesToLog) {
-                if (idents.indexOf(service) >= 0) {
-                    return this.node_allFiles(servicesToLog, message, ++depth)
-                        .then(() => {
-                            return this.node_writeToFS(k.path, k.fileName, message)
-                        })
-                        .then(() => {
-                            return message;
-                        });
-                }
-            }
-
-            return this.node_allFiles(servicesToLog, message, ++depth);
-        }
-        return new Promise((resolve, reject) => {
-            resolve(message);
-        })
-    }
-    /**
-     * Füge eine Nachricht an eine Datei
-     * @param path {string} absolute directory path
-     * @param fileName {string} filename containing Placeholders
-     * @param message {string} the message that should append
-     */
-    node_writeToFS(absolutePath: string, fileName: string, message: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            fileName = this._generateStringOutOfPlaceholderString(fileName);
-            let filePath = absolutePath + '/' + fileName;
-            fs.writeFile(filePath, message + '\n', { flag: 'a' }, (error: any) => {
-                if (error)
-                    reject(error);
-                resolve();
-            })
-        });
+    public log (loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string> {
+        let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
+        let internalOptions = {
+            activeService: "LOG",
+            groups: ['ALL', 'LOG']
+        };
+        return this.internal(opt || {}, internalOptions, message);
     }
 
     /**
-     * erstelle die Pfade aus absoluten Pfadangaben synchron
-     * @param toGenPaths 
+     * console.warn aequivalent
+     * @param loguptsOptions 
+     * @param message 
      */
-    node_generateLogDir(toGenPaths: Array<string>): Promise<void> {
-        if (toGenPaths.length === 0)
-            return new Promise((resolve, reject) => { resolve(); });
-        let pathSegments = toGenPaths[0].split(path.sep);
-        let pathToCheck = '';
-        for (let pathSegment of pathSegments) {
-            if (pathSegment === '/' ||  pathSegment === '') continue;
-            pathToCheck += '/' + pathSegment;
-            if (!fs.existsSync(pathToCheck)) {
-                fs.mkdirSync(pathToCheck);
-            }
-        }
-        toGenPaths.shift();
-        return this.node_generateLogDir(toGenPaths);
+    public warn (loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string> {
+        let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
+        let internalOptions = {
+            activeService: "WARN",
+            groups: ['ALL', 'WARN']
+        };
+        return this.internal(opt || {}, internalOptions, message);
     }
 
+    /**
+     * console.error aequivalent
+     * @param loguptsOptions
+     * @param message 
+     */
+    public error (loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string> {
+        let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
+        let internalOptions = {
+            activeService: "ERROR",
+            groups: ['ALL', 'ERROR']
+        };
+        return this.internal(opt || {}, internalOptions, message);
+    }
+
+    /**
+     * console.info aequivalent
+     * @param loguptsOptions 
+     * @param message 
+     */
+    public info (loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string> {
+        let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
+        let internalOptions = {
+            activeService: "INFO",
+            groups: ['ALL', 'INFO']
+        };
+        return this.internal(opt || {}, internalOptions, message);
+    }
+
+    /**
+     * create your custom console.log aequivalent
+     * @param prefix 
+     * @param postfix 
+     * @param loguptsOptions 
+     * @param message 
+     */
+    public custom (prefix:string, postfix:string, loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string> {
+        let opt: LogUpTsOptions= this.prepareLogUpTsOptions(loguptsOptions, message);
+        let internalOptions = {
+            activeService: "CUSTOM",
+            groups: ['ALL', 'CUSTOM', prefix]
+        };
+        opt.prefix = prefix;
+        opt.postfix = postfix;
+        return this.internal(opt || {}, internalOptions, message);
+    }
 }

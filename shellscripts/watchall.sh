@@ -1,6 +1,7 @@
 #!/bin/bash
-tsc -p ./config/tsconfig.umd.json --watch &
+echo start watch
 tsc -p ./config/tsconfig.es2015.json --watch &
-rollup dist/temp/es2015/logupts.js --watch --o dist/browser/logupts.js --f iife --name "logupts" &
-rollup dist/temp/es2015/logupts.js --watch --o dist/es2015/logupts.js --f es --name "logupts"
+tsc -p ./config/tsconfig.umd.json --watch &
+rollup dist/es2015/logupts.js --watch --o dist/browser/logupts.js --f iife --name "logupts" &
+rollup dist/es2015/logupts.js --watch --o dist/browser/es2015/logupts.js --f es --name "logupts" &
 wait
