@@ -23,8 +23,8 @@ export interface Transport {
     key: string;
 }
 export declare class LogUpTs {
-    protected loguptsOptions: LogUpTsOptions;
-    protected placeholderVars: any;
+    loguptsOptions: LogUpTsOptions;
+    placeholderVars: any;
     constructor(newLogUpTsOptions?: LogUpTsOptions);
     generateString(string: string): string;
     static generateString(logupts: LogUpTs, string: string): string;
