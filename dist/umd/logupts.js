@@ -4,217 +4,227 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./placeholders", "./placeholders"], factory);
+        define(["require", "exports", "./placeholders"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const placeholders_1 = require("./placeholders");
-    var placeholders_2 = require("./placeholders");
-    exports.Placeholders = placeholders_2.Placeholders;
-    exports.Placeholder = placeholders_2.Placeholder;
-    var Runtime;
-    (function (Runtime) {
-        Runtime[Runtime["commonjs"] = 0] = "commonjs";
-        Runtime[Runtime["amd"] = 1] = "amd";
-        Runtime[Runtime["default"] = 2] = "default";
-    })(Runtime = exports.Runtime || (exports.Runtime = {}));
-    let runtime = (typeof module === 'object' && typeof module.exports === "object") ?
-        Runtime.commonjs :
-        (typeof define === "function" && define.amd) ?
-            Runtime.amd :
-            Runtime.default;
-    let fs, path;
-    if (runtime === Runtime.commonjs) {
-        fs = require('fs');
-        path = require('path');
-    }
-    else {
-        fs = (() => { });
-        path = (() => { });
-    }
+    exports.Placeholder = placeholders_1.Placeholder;
+    exports.defaultPlaceholders = placeholders_1.defaultPlaceholders;
+    exports.DEBUG = true;
     class LogUpTs {
-        constructor(logOptions) {
-            this.placeholderVars = {};
-            this.logOptions = {
-                placeholders: placeholders_1.Placeholders,
-                praefix: '{{service()}} ',
-                postfix: '',
-                quiet: false,
-                logFiles: [],
-                writeToFile: false,
-                writeToFileSystem: false
+        constructor(newLogUpTsOptions = {}) {
+            this.loguptsOptions = this.defaultLogUpTsOptions();
+            this.placeholderVars = {
+                activeService: 'LOG'
             };
-            this.placeholderVars.activeService = 'LOG';
-            this.this = this;
-            if (logOptions)
-                this._mergeOptions(logOptions);
-            this.logOptions.logFiles = this.logOptions.logFiles || [];
-            let paths = [];
-            for (let logFile of this.logOptions.logFiles) {
-                paths.push(logFile.path);
-            }
-            this.genDirs = this.node_generateLogDir(paths);
+            this.loguptsOptions = this.mergeLogUpTsOptions(this.loguptsOptions, newLogUpTsOptions);
         }
-        ;
-        _generateStringOutOfPlaceholderString(str) {
-            function cUp(param) {
+        generateString(string) {
+            function countUp(param) {
                 for (let i = 0; i < param.length; ++i) {
                     if (param.substr(i, 3) === ')}}')
                         return i;
                 }
                 throw new Error('didnt close Placeholder');
             }
-            if (str === undefined)
-                return '';
+            string = string || '';
+            let placeholders = this.loguptsOptions.placeholders || {};
+            for (let propName in placeholders) {
+                let regexDefault = new RegExp(`{{${placeholders[propName].key}}}`, 'gi');
+                string = string.replace(regexDefault, placeholders[propName].replace(this.placeholderVars, ''));
+            }
+            return string;
+        }
+        static generateString(logupts, string) {
+            function countUp(param) {
+                for (let i = 0; i < param.length; ++i) {
+                    if (param.substr(i, 3) === ')}}')
+                        return i;
+                }
+                throw new Error('didnt close Placeholder');
+            }
+            string = string || '';
+            let placeholders = logupts.loguptsOptions.placeholders || {};
+            for (let propName in placeholders) {
+                let regexDefault = new RegExp(`{{${placeholders[propName].key}}}`, 'gi');
+                string = string.replace(regexDefault, placeholders[propName].replace(logupts.placeholderVars, ''));
+            }
+            return string;
+        }
+        defaultLogUpTsOptions() {
+            return {
+                prefix: '{{service}} ',
+                postfix: '',
+                placeholders: placeholders_1.defaultPlaceholders,
+                quiet: false,
+                transports: [],
+                customAsyncExecutions: [],
+                customExecutions: [],
+            };
+        }
+        mergeStringArray(textArr) {
+            let str = '';
+            for (let strPart of textArr) {
+                if (typeof strPart !== 'string') {
+                    strPart = this.mergeStringArray(strPart);
+                }
+                str += strPart;
+            }
+            return str;
+        }
+        prepareLogUpTsOptions(logUpTsOptions, messageArr) {
+            if (typeof logUpTsOptions === 'string') {
+                if (messageArr === undefined)
+                    throw new TypeError('if loguptsOptions is a string then the messageArr is needed');
+                messageArr.unshift(logUpTsOptions);
+                return this.loguptsOptions;
+            }
+            else if (logUpTsOptions === undefined) {
+                if (messageArr === undefined)
+                    throw new TypeError('if loguptsOptions is a string then the messageArr is needed');
+                messageArr.unshift('');
+                return this.loguptsOptions;
+            }
             else {
-                let string = str || '';
-                let placeholders = this.logOptions.placeholders || {};
-                for (let propName in placeholders) {
-                    let regexDefault = new RegExp(`{{${placeholders[propName].key}}}`, 'gi');
-                    string = string.replace(regexDefault, placeholders[propName].replacer || '');
-                    let regexFn = new RegExp(`{{${placeholders[propName].key}\((.{0,})\)}}`, 'i');
-                    while (regexFn.exec(string)) {
-                        let match = regexFn.exec(string) || { index: -1 };
-                        let index = match.index;
-                        if (index >= 0) {
-                            let length1 = `{{${placeholders[propName].key}(`.length;
-                            let minIndex = index + length1;
-                            let cUpStr = string.substr(minIndex);
-                            let fn = placeholders[propName].replacerFn || (() => { return "help"; });
-                            let cUpNumber = cUp(cUpStr);
-                            let checkReg = new RegExp('{{', 'gi');
-                            if (checkReg.exec(string.substr(minIndex, cUpNumber)) !== null) {
-                                continue;
-                            }
-                            if (cUpNumber === 0) {
-                                string = string.replace(string.substr(index, length1 + cUpNumber + 3), fn(this.this.placeholderVars));
-                            }
-                            else {
-                                if (typeof this.this[string.substr(minIndex, cUpNumber)] === 'string') {
-                                    string = string.replace(string.substr(index, length1 + cUpNumber + 3), fn(this.this[string.substr(minIndex, cUpNumber)]));
-                                }
-                                else {
-                                    string = string.replace(string.substr(index, length1 + cUpNumber + 3), fn(string.substr(minIndex, cUpNumber)));
-                                }
-                            }
+                let opt = this.copyLotUpTsOptions(this.loguptsOptions);
+                for (let propKey in logUpTsOptions) {
+                    opt[propKey] = logUpTsOptions[propKey];
+                }
+                return opt;
+            }
+        }
+        mergeLogUpTsOptions(a, b) {
+            let opt = this.copyLotUpTsOptions(a);
+            for (let propKey in b) {
+                opt[propKey] = b[propKey];
+            }
+            return opt;
+        }
+        copyLotUpTsOptions(logUpTsOptions) {
+            let opt = this.defaultLogUpTsOptions();
+            for (let i in logUpTsOptions) {
+                switch (i) {
+                    case 'placeholders':
+                        let newPlc = {};
+                        let p = opt.placeholders || {};
+                        let pNew = logUpTsOptions.placeholders || {};
+                        for (let i in p) {
+                            newPlc[i] = new placeholders_1.Placeholder(i, p[i].replaceVar);
                         }
-                    }
-                    ;
-                }
-                return string;
-            }
-        }
-        _mergeOptions(newOptions) {
-            for (let key in newOptions) {
-                if (typeof this.logOptions[key] === 'object') {
-                    this._mergeObjects(this.logOptions[key], newOptions[key]);
-                }
-                else {
-                    this.logOptions[key] = newOptions[key];
-                }
-            }
-        }
-        _mergeObjects(currentObj, toAddObj) {
-            for (let key in toAddObj) {
-                currentObj[key] = toAddObj[key];
-            }
-            return currentObj;
-        }
-        log(message, options) {
-            let opt = options || this.logOptions;
-            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'LOG', ['ALL', 'LOG'], message, options, 'log');
-        }
-        error(message, options) {
-            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'ERROR', ['ALL', 'ERROR'], message instanceof Error ? message.message : message, options, 'error');
-        }
-        warn(message, options) {
-            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'WARN', ['ALL', 'WARN'], message instanceof Error ? message.message : message, options, 'warn');
-        }
-        info(message, options) {
-            return this.internal(this.logOptions.praefix || '{{service()}}', this.logOptions.postfix || '', 'INFO', ['ALL', 'INFO'], message, options, 'info');
-        }
-        custom(praefix, postfix, message, options, activeService) {
-            let toPrint = ['ALL', 'CUSTOM', praefix];
-            return this.internal(praefix, postfix, activeService || 'CUSTOM', toPrint, message, options);
-        }
-        internal(praefix, postfix, activeService, toPrint, message, options, consoleFunc = 'log') {
-            let opt = options || this.logOptions;
-            this.placeholderVars.activeService = activeService;
-            let outPut = praefix + message + postfix;
-            outPut = this._generateStringOutOfPlaceholderString(outPut);
-            if (!opt.quiet) {
-                switch (consoleFunc) {
-                    case 'warn':
-                        console.warn(outPut);
+                        for (let i in pNew) {
+                            newPlc[i] = new placeholders_1.Placeholder(i, pNew[i].replaceVar);
+                        }
+                        opt.placeholders = newPlc;
                         break;
-                    case 'error':
-                        console.error(outPut);
+                    case 'transports':
+                        let copyTrans = (opt.transports || []).slice(0);
+                        let newTrans = logUpTsOptions.transports || [];
+                        for (let i of newTrans) {
+                            copyTrans.push(i);
+                        }
+                        opt.transports = copyTrans;
                         break;
-                    case 'info':
-                        console.info(outPut);
+                    case 'customExecutions':
+                        let copyExec = (opt.customExecutions || []).slice(0);
+                        for (let i of logUpTsOptions.customExecutions || []) {
+                            copyExec.push(i);
+                        }
+                        opt.customExecutions = copyExec;
+                        break;
+                    case 'customAsyncExecutions':
+                        let copyAsyncExec = (opt.customAsyncExecutions || []).slice(0);
+                        for (let i of logUpTsOptions.customAsyncExecutions || []) {
+                            copyAsyncExec.push(i);
+                        }
+                        opt.customAsyncExecutions = copyAsyncExec;
                         break;
                     default:
-                        console.log(outPut);
+                        opt[i] = logUpTsOptions[i];
                 }
             }
-            if (runtime !== Runtime.commonjs || !opt.writeToFileSystem)
-                return outPut;
-            else
-                return this.genDirs.then(() => this.node_allFiles(toPrint, outPut));
+            return opt;
         }
-        node_allFiles(servicesToLog, message, depth = 0) {
-            let logFiles = this.logOptions.logFiles || [];
-            let foundServiceInIPathsServiceToLog = false;
-            if (depth < logFiles.length) {
-                let idents = [];
-                let k = logFiles[depth];
-                for (let l of k.serviceToLog) {
-                    idents.push(l);
+        execInternalOptions(internalOptions) {
+            for (let key in internalOptions) {
+                switch (key) {
+                    case "activeService":
+                        this.placeholderVars.activeService = internalOptions.activeService;
+                        break;
                 }
-                for (let service of servicesToLog) {
-                    if (idents.indexOf(service) >= 0) {
-                        return this.node_allFiles(servicesToLog, message, ++depth)
-                            .then(() => {
-                            return this.node_writeToFS(k.path, k.fileName, message);
-                        })
-                            .then(() => {
-                            return message;
-                        });
-                    }
-                }
-                return this.node_allFiles(servicesToLog, message, ++depth);
             }
-            return new Promise((resolve, reject) => {
-                resolve(message);
-            });
         }
-        node_writeToFS(absolutePath, fileName, message) {
-            return new Promise((resolve, reject) => {
-                fileName = this._generateStringOutOfPlaceholderString(fileName);
-                let filePath = absolutePath + '/' + fileName;
-                fs.writeFile(filePath, message + '\n', { flag: 'a' }, (error) => {
-                    if (error)
-                        reject(error);
-                    resolve();
+        internal(loguptsOptions, internalOptions, ...messages) {
+            let opt = this.mergeLogUpTsOptions(this.loguptsOptions, loguptsOptions);
+            this.execInternalOptions(internalOptions);
+            let str = opt.prefix + this.mergeStringArray(messages)
+                + opt.postfix;
+            str = this.generateString(str);
+            for (let i of opt.customExecutions || []) {
+                i();
+            }
+            if (!opt.quiet)
+                console.log(str);
+            if ((opt.transports || []).length === 0 && (opt.customAsyncExecutions || []).length === 0) {
+                return str;
+            }
+            else {
+                let promArr = [];
+                let tran = opt.transports || [];
+                for (let transport of tran) {
+                    promArr.push(transport.exec(internalOptions || {}, str));
+                }
+                for (let asyncTask of opt.customAsyncExecutions || []) {
+                    promArr.push(asyncTask());
+                }
+                return Promise.all(promArr)
+                    .then(() => {
+                    return str;
                 });
-            });
-        }
-        node_generateLogDir(toGenPaths) {
-            if (toGenPaths.length === 0)
-                return new Promise((resolve, reject) => { resolve(); });
-            let pathSegments = toGenPaths[0].split(path.sep);
-            let pathToCheck = '';
-            for (let pathSegment of pathSegments) {
-                if (pathSegment === '/' || pathSegment === '')
-                    continue;
-                pathToCheck += '/' + pathSegment;
-                if (!fs.existsSync(pathToCheck)) {
-                    fs.mkdirSync(pathToCheck);
-                }
             }
-            toGenPaths.shift();
-            return this.node_generateLogDir(toGenPaths);
+        }
+        log(loguptsOptions, ...message) {
+            let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
+            let internalOptions = {
+                activeService: "LOG",
+                groups: ['ALL', 'LOG']
+            };
+            return this.internal(opt || {}, internalOptions, message);
+        }
+        warn(loguptsOptions, ...message) {
+            let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
+            let internalOptions = {
+                activeService: "WARN",
+                groups: ['ALL', 'WARN']
+            };
+            return this.internal(opt || {}, internalOptions, message);
+        }
+        error(loguptsOptions, ...message) {
+            let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
+            let internalOptions = {
+                activeService: "ERROR",
+                groups: ['ALL', 'ERROR']
+            };
+            return this.internal(opt || {}, internalOptions, message);
+        }
+        info(loguptsOptions, ...message) {
+            let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
+            let internalOptions = {
+                activeService: "INFO",
+                groups: ['ALL', 'INFO']
+            };
+            return this.internal(opt || {}, internalOptions, message);
+        }
+        custom(prefix, postfix, loguptsOptions, ...message) {
+            let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
+            let internalOptions = {
+                activeService: "CUSTOM",
+                groups: ['ALL', 'CUSTOM', prefix]
+            };
+            opt.prefix = prefix;
+            opt.postfix = postfix;
+            return this.internal(opt || {}, internalOptions, message);
         }
     }
     exports.LogUpTs = LogUpTs;

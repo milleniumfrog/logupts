@@ -1,51 +1,43 @@
-import { Placeholder } from './placeholders';
-export { Placeholders, Placeholder } from './placeholders';
-export declare enum Runtime {
-    commonjs = 0,
-    amd = 1,
-    default = 2,
-}
-export interface ILogUpTs {
-    [prop: string]: any;
-    log: (msg: string, options?: ILogUpTsOptions) => string | Promise<string> | void;
-    error: (msg: string, options?: ILogUpTsOptions) => string | Promise<string>;
-    info: (msg: string, options?: ILogUpTsOptions) => string | Promise<string>;
-    custom: (praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, serviceName?: string) => string | Promise<string>;
-}
-export interface IPaths {
-    identifier: string;
-    path: string;
-    fileName: string;
-    serviceToLog: Array<string>;
-}
-export interface ILogUpTsOptions {
+import { Placeholder, defaultPlaceholders } from './placeholders';
+export { Placeholder, defaultPlaceholders };
+export declare const DEBUG: boolean;
+export interface LogUpTsOptions {
     [index: string]: any;
-    praefix?: string;
+    prefix?: string;
     postfix?: string;
     placeholders?: {
         [str: string]: Placeholder;
     };
     quiet?: boolean;
-    logFiles?: Array<IPaths>;
-    writeToFile?: boolean;
-    writeToFileSystem?: boolean;
+    transports?: Transport[];
+    customExecutions?: ((...params: any[]) => any)[];
+    customAsyncExecutions?: ((...params: any[]) => Promise<any>)[];
 }
-export declare class LogUpTs implements ILogUpTs {
-    logOptions: ILogUpTsOptions;
+export declare type text = Array<string> | string;
+export interface InternalLogUpTsOptions {
+    activeService?: string;
+    groups?: Array<string>;
+}
+export interface Transport {
+    exec: (transportOptions: InternalLogUpTsOptions, str: string) => Promise<any>;
+    key: string;
+}
+export declare class LogUpTs {
+    loguptsOptions: LogUpTsOptions;
     placeholderVars: any;
-    private this;
-    genDirs: any;
-    constructor(logOptions?: ILogUpTsOptions);
-    _generateStringOutOfPlaceholderString(str: string | undefined): string;
-    _mergeOptions(newOptions: ILogUpTsOptions): void;
-    _mergeObjects(currentObj: any, toAddObj: any): any;
-    log(message: string, options?: ILogUpTsOptions): string | Promise<string> | void;
-    error(message: string | Error, options?: ILogUpTsOptions): string | Promise<string>;
-    warn(message: string | Error, options?: ILogUpTsOptions): string | Promise<string>;
-    info(message: string, options?: ILogUpTsOptions): string | Promise<string>;
-    custom(praefix: string, postfix: string, message: string, options?: ILogUpTsOptions, activeService?: string): string | Promise<string>;
-    internal(praefix: string, postfix: string, activeService: string, toPrint: Array<string>, message: string, options?: ILogUpTsOptions, consoleFunc?: string): string | Promise<string>;
-    node_allFiles(servicesToLog: Array<string>, message: string, depth?: number): Promise<string>;
-    node_writeToFS(absolutePath: string, fileName: string, message: string): Promise<void>;
-    node_generateLogDir(toGenPaths: Array<string>): Promise<void>;
+    constructor(newLogUpTsOptions?: LogUpTsOptions);
+    generateString(string: string): string;
+    static generateString(logupts: LogUpTs, string: string): string;
+    defaultLogUpTsOptions(): LogUpTsOptions;
+    mergeStringArray(textArr: text[]): string;
+    prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions;
+    mergeLogUpTsOptions(a: LogUpTsOptions, b: LogUpTsOptions): LogUpTsOptions;
+    copyLotUpTsOptions(logUpTsOptions: LogUpTsOptions): LogUpTsOptions;
+    execInternalOptions(internalOptions: InternalLogUpTsOptions): void;
+    internal(loguptsOptions: LogUpTsOptions, internalOptions: InternalLogUpTsOptions, ...messages: text[]): string | Promise<string>;
+    log(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
+    warn(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
+    error(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
+    info(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
+    custom(prefix: string, postfix: string, loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
 }

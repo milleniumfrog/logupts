@@ -1,7 +1,49 @@
-import { Placeholder, defaultPlaceholders } from './placeholders';
-export { Placeholder, defaultPlaceholders };
-export const DEBUG = true;
-export class LogUpTs {
+class Placeholder {
+    constructor(key, replaceVar) {
+        this.key = key;
+        this.replaceVar = replaceVar;
+    }
+    replace(logObjPlaceholderVars, param) {
+        if (typeof this.replaceVar === 'string') {
+            return this.replaceVar;
+        }
+        if (param.length === 0) {
+            return this.replaceVar(logObjPlaceholderVars);
+        }
+        else {
+            param = `[${param}]`;
+            return this.replaceVar(logObjPlaceholderVars, JSON.parse(param));
+        }
+    }
+}
+let defaultPlaceholders = {
+    date: new Placeholder('date', `${fillStrWithZeros(2, String((new Date()).getDate()))}`),
+    day: new Placeholder('day', `${fillStrWithZeros(2, String((new Date()).getDay()))}`),
+    month: new Placeholder('month', `${fillStrWithZeros(2, String((new Date()).getMonth() + 1))}`),
+    fullYear: new Placeholder('fullYear', `${(new Date()).getFullYear()}`),
+    year: new Placeholder('year', `${(new Date()).getFullYear()}`),
+    hours: new Placeholder('hours', `${fillStrWithZeros(2, String((new Date()).getHours()))}`),
+    minutes: new Placeholder('minutes', `${fillStrWithZeros(2, String((new Date()).getMinutes()))}`),
+    seconds: new Placeholder('seconds', `${fillStrWithZeros(2, String((new Date()).getSeconds()))}`),
+    frog: new Placeholder('frog', 'All Contributers: milleniumfrog'),
+    service: new Placeholder('service', ((placeholderVars) => {
+        return `[${placeholderVars.activeService}]`;
+    })),
+};
+function fillStrWithZeros(length, msg) {
+    if (length < msg.length) {
+        throw new Error('the message is longer than the wished length.');
+    }
+    else {
+        for (let i = msg.length; i < length; ++i) {
+            msg = '0' + msg;
+        }
+    }
+    return msg;
+}
+
+const DEBUG = true;
+class LogUpTs {
     constructor(newLogUpTsOptions = {}) {
         this.loguptsOptions = this.defaultLogUpTsOptions();
         this.placeholderVars = {
@@ -10,13 +52,6 @@ export class LogUpTs {
         this.loguptsOptions = this.mergeLogUpTsOptions(this.loguptsOptions, newLogUpTsOptions);
     }
     generateString(string) {
-        function countUp(param) {
-            for (let i = 0; i < param.length; ++i) {
-                if (param.substr(i, 3) === ')}}')
-                    return i;
-            }
-            throw new Error('didnt close Placeholder');
-        }
         string = string || '';
         let placeholders = this.loguptsOptions.placeholders || {};
         for (let propName in placeholders) {
@@ -26,13 +61,6 @@ export class LogUpTs {
         return string;
     }
     static generateString(logupts, string) {
-        function countUp(param) {
-            for (let i = 0; i < param.length; ++i) {
-                if (param.substr(i, 3) === ')}}')
-                    return i;
-            }
-            throw new Error('didnt close Placeholder');
-        }
         string = string || '';
         let placeholders = logupts.loguptsOptions.placeholders || {};
         for (let propName in placeholders) {
@@ -215,4 +243,5 @@ export class LogUpTs {
         return this.internal(opt || {}, internalOptions, message);
     }
 }
-//# sourceMappingURL=logupts.js.map
+
+export { Placeholder, defaultPlaceholders, DEBUG, LogUpTs };
