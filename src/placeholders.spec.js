@@ -7,7 +7,8 @@ describe('PLACEHOLDERS-SPEC-JS', () => {
             quiet: true
         })
         it('date', () => {
-            chai.expect(log.log('{{date}}')).equals(`[LOG] ${(new Date()).getDate()}` )
+            let date = (new Date()).getDate();
+            chai.expect(log.log('{{date}}')).equals(`[LOG] ${(date < 10 ? '0' + date : date)}` )
         })
         it('day', () => {
             let day = (new Date()).getDay();

@@ -10,7 +10,7 @@ describe('LOGUPTS-SPEC-JS', () => {
 		})
 		it('test internal, output [LOG] hello world', () => {
 			let logger = new logupts.LogUpTs({quiet: true});
-			let str = logger.internal({praefix: ''}, {}, '{{service}} ', 'hello world');
+			let str = logger.internal({prefix: ''}, {}, '{{service}} ', 'hello world');
 			chai.expect(str).equals('[LOG] hello world');
 		})
 	})
