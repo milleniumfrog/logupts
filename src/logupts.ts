@@ -11,7 +11,7 @@ export const DEBUG = true;
 export interface LogUpTsOptions {
     [index: string]: any;
     /** set a default prefix */
-    praefix?: string;
+    prefix?: string;
     /** set a default postfix */
     postfix?: string;
     /** set/configure the placeholders */
@@ -89,7 +89,7 @@ export class LogUpTs {
 
     public defaultLogUpTsOptions():LogUpTsOptions {
         return {
-            praefix: '{{service}} ',
+            prefix: '{{service}} ',
             postfix: '',
             placeholders: defaultPlaceholders,
             quiet: false,
@@ -225,7 +225,7 @@ export class LogUpTs {
         // execute something if its 
         this.execInternalOptions(internalOptions);
         // create string
-        let str = opt.praefix + this.mergeStringArray(messages)
+        let str = opt.prefix + this.mergeStringArray(messages)
             + opt.postfix;
         str = this.generateString(str);
         // execute sync Functions
@@ -316,18 +316,18 @@ export class LogUpTs {
 
     /**
      * create your custom console.log aequivalent
-     * @param praefix 
+     * @param prefix 
      * @param postfix 
      * @param loguptsOptions 
      * @param message 
      */
-    public custom (praefix:string, postfix:string, loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string> {
+    public custom (prefix:string, postfix:string, loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string> {
         let opt: LogUpTsOptions= this.prepareLogUpTsOptions(loguptsOptions, message);
         let internalOptions = {
             activeService: "CUSTOM",
-            groups: ['ALL', 'CUSTOM', praefix]
+            groups: ['ALL', 'CUSTOM', prefix]
         };
-        opt.praefix = praefix;
+        opt.prefix = prefix;
         opt.postfix = postfix;
         return this.internal(opt || {}, internalOptions, message);
     }

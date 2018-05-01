@@ -74,7 +74,7 @@ var logupts = (function (exports) {
         }
         defaultLogUpTsOptions() {
             return {
-                praefix: '{{service}} ',
+                prefix: '{{service}} ',
                 postfix: '',
                 placeholders: defaultPlaceholders,
                 quiet: false,
@@ -177,7 +177,7 @@ var logupts = (function (exports) {
         internal(loguptsOptions, internalOptions, ...messages) {
             let opt = this.mergeLogUpTsOptions(this.loguptsOptions, loguptsOptions);
             this.execInternalOptions(internalOptions);
-            let str = opt.praefix + this.mergeStringArray(messages)
+            let str = opt.prefix + this.mergeStringArray(messages)
                 + opt.postfix;
             str = this.generateString(str);
             for (let i of opt.customExecutions || []) {
@@ -235,13 +235,13 @@ var logupts = (function (exports) {
             };
             return this.internal(opt || {}, internalOptions, message);
         }
-        custom(praefix, postfix, loguptsOptions, ...message) {
+        custom(prefix, postfix, loguptsOptions, ...message) {
             let opt = this.prepareLogUpTsOptions(loguptsOptions, message);
             let internalOptions = {
                 activeService: "CUSTOM",
-                groups: ['ALL', 'CUSTOM', praefix]
+                groups: ['ALL', 'CUSTOM', prefix]
             };
-            opt.praefix = praefix;
+            opt.prefix = prefix;
             opt.postfix = postfix;
             return this.internal(opt || {}, internalOptions, message);
         }

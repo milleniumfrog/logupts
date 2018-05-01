@@ -3,7 +3,7 @@ export { Placeholder, defaultPlaceholders };
 export declare const DEBUG: boolean;
 export interface LogUpTsOptions {
     [index: string]: any;
-    praefix?: string;
+    prefix?: string;
     postfix?: string;
     placeholders?: {
         [str: string]: Placeholder;
@@ -39,5 +39,5 @@ export declare class LogUpTs {
     warn(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
     error(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
     info(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
-    custom(praefix: string, postfix: string, loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
+    custom(prefix: string, postfix: string, loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
 }
