@@ -39,8 +39,8 @@ export interface Transport {
 }
 
 export class LogUpTs {
-    protected loguptsOptions: LogUpTsOptions;
-    protected placeholderVars: any;
+    public loguptsOptions: LogUpTsOptions;
+    public placeholderVars: any;
     constructor(newLogUpTsOptions: LogUpTsOptions = {}) {
         this.loguptsOptions = this.defaultLogUpTsOptions();
         this.placeholderVars = {
