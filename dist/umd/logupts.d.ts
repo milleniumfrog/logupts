@@ -28,12 +28,12 @@ export declare class LogUpTs {
     constructor(newLogUpTsOptions?: LogUpTsOptions);
     generateString(string: string): string;
     static generateString(logupts: LogUpTs, string: string): string;
-    protected defaultLogUpTsOptions(): LogUpTsOptions;
-    protected mergeStringArray(textArr: text[]): string;
-    protected prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions;
-    protected mergeLogUpTsOptions(a: LogUpTsOptions, b: LogUpTsOptions): LogUpTsOptions;
-    protected copyLotUpTsOptions(logUpTsOptions: LogUpTsOptions): LogUpTsOptions;
-    protected execInternalOptions(internalOptions: InternalLogUpTsOptions): void;
+    defaultLogUpTsOptions(): LogUpTsOptions;
+    mergeStringArray(textArr: text[]): string;
+    prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions;
+    mergeLogUpTsOptions(a: LogUpTsOptions, b: LogUpTsOptions): LogUpTsOptions;
+    copyLotUpTsOptions(logUpTsOptions: LogUpTsOptions): LogUpTsOptions;
+    execInternalOptions(internalOptions: InternalLogUpTsOptions): void;
     internal(loguptsOptions: LogUpTsOptions, internalOptions: InternalLogUpTsOptions, ...messages: text[]): string | Promise<string>;
     log(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;
     warn(loguptsOptions?: LogUpTsOptions | string, ...message: string[]): string | Promise<string>;

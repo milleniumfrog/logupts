@@ -87,7 +87,7 @@ export class LogUpTs {
         return string;
     }
 
-    protected defaultLogUpTsOptions():LogUpTsOptions {
+    public defaultLogUpTsOptions():LogUpTsOptions {
         return {
             praefix: '{{service}} ',
             postfix: '',
@@ -103,7 +103,7 @@ export class LogUpTs {
      * @param {text[]} textArr 
      * @returns {string}
     */
-    protected mergeStringArray(textArr: text[]): string {
+    public mergeStringArray(textArr: text[]): string {
         let str = '';
         for (let strPart of textArr) {
             if (typeof strPart !== 'string') {
@@ -114,7 +114,7 @@ export class LogUpTs {
         return str;
     }
 
-    protected prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions {
+    public prepareLogUpTsOptions(logUpTsOptions: LogUpTsOptions | string | undefined, messageArr?: text[]): LogUpTsOptions {
         // if its a string 
         if (typeof logUpTsOptions === 'string') {
             if (messageArr === undefined)
@@ -142,7 +142,7 @@ export class LogUpTs {
      * @param a 
      * @param b should be a logOptions object that gets destroyed or not used
      */
-    protected mergeLogUpTsOptions(a: LogUpTsOptions, b: LogUpTsOptions): LogUpTsOptions {
+    public mergeLogUpTsOptions(a: LogUpTsOptions, b: LogUpTsOptions): LogUpTsOptions {
         let opt: LogUpTsOptions = this.copyLotUpTsOptions(a);
         for (let propKey in b) {
             opt[propKey] = b[propKey];
@@ -154,7 +154,7 @@ export class LogUpTs {
      * copy loguptsOptions
      * @param logUpTsOptions 
      */
-    protected copyLotUpTsOptions(logUpTsOptions: LogUpTsOptions): LogUpTsOptions {
+    public copyLotUpTsOptions(logUpTsOptions: LogUpTsOptions): LogUpTsOptions {
         let opt: LogUpTsOptions = this.defaultLogUpTsOptions();
         for (let i in logUpTsOptions) {
             switch(i) {
@@ -199,7 +199,7 @@ export class LogUpTs {
         return opt;
     }
 
-    protected execInternalOptions(internalOptions: InternalLogUpTsOptions) {
+    public execInternalOptions(internalOptions: InternalLogUpTsOptions) {
         for(let key in internalOptions) {
             switch(key){
                 case "activeService":
