@@ -1,8 +1,8 @@
 import { Placeholder, defaultPlaceholders } from './placeholders';
 export { Placeholder, defaultPlaceholders };
-export const DEBUG = true;
 export class LogUpTs {
-    constructor(newLogUpTsOptions = {}) {
+    constructor(newLogUpTsOptions = {}, debug = false) {
+        this.debug = debug;
         this.loguptsOptions = this.defaultLogUpTsOptions();
         this.placeholderVars = {
             activeService: 'LOG'

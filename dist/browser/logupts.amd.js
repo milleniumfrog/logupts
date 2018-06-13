@@ -44,9 +44,9 @@ define(['exports'], function (exports) { 'use strict';
         return msg;
     }
 
-    const DEBUG = true;
     class LogUpTs {
-        constructor(newLogUpTsOptions = {}) {
+        constructor(newLogUpTsOptions = {}, debug = false) {
+            this.debug = debug;
             this.loguptsOptions = this.defaultLogUpTsOptions();
             this.placeholderVars = {
                 activeService: 'LOG'
@@ -248,7 +248,6 @@ define(['exports'], function (exports) { 'use strict';
 
     exports.Placeholder = Placeholder;
     exports.defaultPlaceholders = defaultPlaceholders;
-    exports.DEBUG = DEBUG;
     exports.LogUpTs = LogUpTs;
 
     Object.defineProperty(exports, '__esModule', { value: true });

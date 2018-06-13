@@ -1,6 +1,5 @@
 import { Placeholder, defaultPlaceholders } from './placeholders';
 export { Placeholder, defaultPlaceholders };
-export declare const DEBUG: boolean;
 export interface LogUpTsOptions {
     [index: string]: any;
     prefix?: string;
@@ -15,17 +14,21 @@ export interface LogUpTsOptions {
 }
 export declare type text = Array<string> | string;
 export interface InternalLogUpTsOptions {
+    [index: string]: any;
     activeService?: string;
     groups?: Array<string>;
+    transport?: any;
 }
 export interface Transport {
+    [index: string]: any;
     exec: (transportOptions: InternalLogUpTsOptions, str: string) => Promise<any>;
     key: string;
 }
 export declare class LogUpTs {
+    private debug;
     loguptsOptions: LogUpTsOptions;
     placeholderVars: any;
-    constructor(newLogUpTsOptions?: LogUpTsOptions);
+    constructor(newLogUpTsOptions?: LogUpTsOptions, debug?: boolean);
     generateString(string: string): string;
     static generateString(logupts: LogUpTs, string: string): string;
     defaultLogUpTsOptions(): LogUpTsOptions;
