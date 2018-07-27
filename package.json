@@ -1,0 +1,33 @@
+{
+  "name": "logupts",
+  "version": "3.0.0",
+  "description": "LogUpTs is an extendable class, which logs your message with a generated prefix and postfix. The prefix and postfix strings have the possibility to add Placeholder that will be replaced when the script executes",
+  "main": "./dist/es2015/logupts.js",
+  "scripts": {
+    "test": "jasmine --config=jasmine.json",
+    "karma": "karma start",
+    "build": "webpack && tsc",
+    "watch": "webpack --watch & tsc --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/milleniumfrog/logupts.git"
+  },
+  "author": "René Schwarzinger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/milleniumfrog/logupts/issues"
+  },
+  "homepage": "https://github.com/milleniumfrog/logupts#readme",
+  "devDependencies": {
+    "@types/jasmine": "^2.8.8",
+    "jasmine": "^3.1.0",
+    "karma": "^2.0.5",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^1.1.2",
+    "ts-loader": "^4.4.2",
+    "typescript": "^2.9.2",
+    "webpack": "^4.16.3",
+    "webpack-cli": "^3.1.0"
+  }
+}
