@@ -69,20 +69,7 @@ export class LogUpTs {
     }
 
     static generateString(logupts: LogUpTs,string: string): string {
-        function countUp(param: string) {
-            for (let i = 0; i < param.length; ++i) {
-                if (param.substr(i, 3) === ')}}')
-                    return i;
-            }
-            throw new Error('didnt close Placeholder');
-        }
-        string = string || '';
-        let placeholders = logupts.loguptsOptions.placeholders || {};
-        for (let propName in placeholders) {
-            let regexDefault = new RegExp(`{{${placeholders[propName].key}}}`, 'gi');
-            // DEBUG console.log(placeholders[propName]);
-            string = string.replace(regexDefault, placeholders[propName].replace(logupts.placeholderVars, ''))
-        }
+       
 
         return string;
     }

@@ -1,4 +1,5 @@
 import { LogUpTs } from 'logupts';
+
 export class Placeholder {
     constructor(
         public key: string,
@@ -19,7 +20,7 @@ export class Placeholder {
             return this.replaceVar(logObjPlaceholderVars);
         } else {
             param = `[${param}]`;
-            return this.replaceVar(logObjPlaceholderVars, JSON.parse(param));
+            return this.replaceVar(logObjPlaceholderVars, JSON.parse(p‚aram));
         }
     }
 }
