@@ -1,5 +1,5 @@
 import { Placeholder, DefaultPlaceholders } from './placeholder';
-import { replaceComplex } from './strplace';
+import { replaceComplex } from 'strplace';
 
 export { Placeholder, DefaultPlaceholders } from './placeholder';
 
@@ -40,7 +40,7 @@ export class LogUpTs {
     public internals: object;
     public options: LogUpTsOptions;
 
-    constructor( customOptions?: LogUpTsOptions ) {
+    constructor( customOptions?: LogUpTsOptions, setInternals?: object ) {
         customOptions = customOptions || {};
         // set loguptsoptions
         this.options = {
@@ -56,6 +56,9 @@ export class LogUpTs {
         // set defaultinternals
         this.internals = {
             service: 'LOG'
+        }
+        for ( let key in setInternals || {} ) {
+            (<any>this.internals)[key] = (<any>setInternals)[key];
         }
     }
     
