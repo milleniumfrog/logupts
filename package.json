@@ -2,7 +2,8 @@
   "name": "logupts",
   "version": "3.0.1",
   "description": "LogUpTs is an extendable class, which logs your message with a generated prefix and postfix. The prefix and postfix strings have the possibility to add Placeholder that will be replaced when the script executes",
-  "main": "./dist/es2015/logupts.js",
+  "main": "./dist/logupts.js",
+  "types": "./dist/logupts.d.ts",
   "scripts": {
     "test": "jasmine --config=jasmine.json",
     "karma": "karma start",
