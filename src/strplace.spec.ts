@@ -15,13 +15,13 @@ describe('replace Complex', () => {
 			{
 				flags: 'g',
 				keys: ['<hello/>'],
-				replacer: (args: string) => { return 'hello' }
+				replacer: (args?: string, passArg?: any) => { return 'hello' }
 			},
 			{
 				flags: 'g',
 				keys: ['<a>', '</a>'],
-				replacer: (args: string) => { return `<l>${args}</l>` }
-			}
+				replacer: (args?: string, passArg?: any) => { return `<l>${args}</l>` }
+			},
 		];
 		expect( replaceComplex( keys, str )).toEqual( '<str>hello <l>this is a referrer<l>this is a referrer</l></l></str>' );
 		str = '{{str(this is a text)}}';
@@ -29,9 +29,21 @@ describe('replace Complex', () => {
 			{
 				flags: 'g',
 				keys: ['\\{\\{str\\(', '\\)\\}\\}'],
-				replacer: (args: string) => {return args}
-			}
+				replacer: (args?: string, passArg?: any) => {return `${args || "none"}`}
+			},
+			{
+				flags: 'g',
+				keys: ['\\{\\{service\\}\\}'],
+				replacer: ( args?: string, toPass?: any ) => {
+					toPass = toPass || {service: "LOGS"};
+					return `[${toPass.service}]`;
+				}
+			},
 		]
 		expect( replaceComplex( keys, str )).toEqual( 'this is a text' );
+		let toPassArg: any = {
+			service: 'LOG'
+		};
+		expect( replaceComplex( keys, '{{service}}', toPassArg )).toEqual( '[LOG]' ); 
 	})
 });

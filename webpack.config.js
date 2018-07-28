@@ -4,12 +4,15 @@ module.exports = {
 	mode: 'production',
 	entry: {
 		'logupts.bundle': './src/logupts.ts',
-		'logupts.spec.browser': './src/logupts.spec.ts'
+		'logupts.spec': './src/logupts.spec.ts',
+		'strplace.spec': './src/strplace.spec.ts',
+		'placeholder.spec': './src/placeholder.spec.ts'
 	},
 	output: {
 		filename: '[name].js',
 		path: path.resolve(__dirname, 'dist')
 	},
+	devtool: 'inline-source-map',
 	module: {
 		rules: [
 			{

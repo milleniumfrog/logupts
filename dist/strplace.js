@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function replaceSingle(key, string, replaceContent, flags) {
+export function replaceSingle(key, string, replaceContent, flags, passArguments) {
     // set default flags
     flags = flags || 'g';
     // create Regex
@@ -8,19 +6,18 @@ function replaceSingle(key, string, replaceContent, flags) {
     let res;
     let counter = 0;
     while ((res = regex.exec(string.slice(counter))) !== null) {
-        string = string.replace(key, typeof replaceContent === 'function' ? replaceContent() : replaceContent);
+        key = key.replace((new RegExp('\\\\', 'g')), '');
+        string = string.replace(key, typeof replaceContent === 'function' ? replaceContent('', passArguments) : replaceContent);
         ++counter;
     }
     return string;
 }
-exports.replaceSingle = replaceSingle;
 ;
-function replaceComplex(complexKeys, string) {
+export function replaceComplex(complexKeys, string, passArguments) {
     for (let complex of complexKeys) {
         // single key placeholders
         if (complex.keys[1] === undefined) {
-            string = complex.called !== true ? replaceSingle(complex.keys[0], string, complex.replacer, complex.flags) : string;
-            complex.called = true;
+            string = complex.called !== true ? replaceSingle(complex.keys[0], string, (args, toPass) => { return complex.replacer('', toPass); }, complex.flags, passArguments) : string;
         }
         // 2 key placeholders
         else {
@@ -46,11 +43,10 @@ function replaceComplex(complexKeys, string) {
                 let removeEscapesFromKeys = [complex.keys[0].replace((new RegExp('\\\\', 'g')), ''), complex.keys[1].replace((new RegExp('\\\\', 'g')), '')];
                 if (res2 !== null) {
                     // create new string
-                    string = string.slice(0, res1.index) + complex.replacer(string.slice(res1.index + removeEscapesFromKeys[0].length, res2.index)) + string.slice(res2.index + removeEscapesFromKeys[1].length);
+                    string = string.slice(0, res1.index) + complex.replacer(string.slice(res1.index + removeEscapesFromKeys[0].length, res2.index), passArguments) + string.slice(res2.index + removeEscapesFromKeys[1].length);
                 }
             }
         }
     }
     return string;
 }
-exports.replaceComplex = replaceComplex;
