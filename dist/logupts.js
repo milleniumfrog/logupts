@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { DefaultPlaceholders } from './placeholder';
-import { replaceComplex } from './strplace';
+import { replaceComplex } from 'strplace';
 export { DefaultPlaceholders } from './placeholder';
 let defaultOptions = {
     prefix: '{{service}} ',
@@ -20,7 +20,7 @@ let defaultOptions = {
     logStack: true,
 };
 export class LogUpTs {
-    constructor(customOptions) {
+    constructor(customOptions, setInternals) {
         customOptions = customOptions || {};
         // set loguptsoptions
         this.options = {
@@ -37,6 +37,9 @@ export class LogUpTs {
         this.internals = {
             service: 'LOG'
         };
+        for (let key in setInternals || {}) {
+            this.internals[key] = setInternals[key];
+        }
     }
     mergeOptions(customOptions) {
         return {
