@@ -7,3 +7,4 @@ dist/temp/
 doc
 test/node.js
 old**
+dist/dist/
