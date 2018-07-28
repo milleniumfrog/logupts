@@ -2,7 +2,7 @@ import { ComplexKey as Placeholder } from './strplace';
 
 export { ComplexKey as Placeholder } from './strplace';
 
-export const DefaultPlaceholder: Placeholder[] = [
+export const DefaultPlaceholders: Placeholder[] = [
     // get day 1-31
     {
         keys: ['{{date}}'],
