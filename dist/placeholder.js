@@ -1,4 +1,4 @@
-export const DefaultPlaceholder = [
+export const DefaultPlaceholders = [
     // get day 1-31
     {
         keys: ['{{date}}'],
@@ -52,7 +52,7 @@ export const DefaultPlaceholder = [
     {
         keys: ['{{service}}'],
         replacer: (none, passArguments) => {
-            return `[${passArguments.activeService || 'DEFAULT'}]`;
+            return `[${passArguments.service || 'DEFAULT'}]`;
         },
         flags: 'g'
     },

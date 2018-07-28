@@ -56,7 +56,7 @@ export const DefaultPlaceholders: Placeholder[] = [
     {
         keys: ['{{service}}'],
         replacer: ( none?: string, passArguments?: any) => {
-           return `[${passArguments.activeService || 'DEFAULT'}]`;
+           return `[${passArguments.service || 'DEFAULT'}]`;
         },
         flags: 'g'
     },
