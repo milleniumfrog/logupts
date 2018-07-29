@@ -1,6 +1,6 @@
 {
   "name": "logupts",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "LogUpTs is an extendable class, which logs your message with a generated prefix and postfix. The prefix and postfix strings have the possibility to add Placeholder that will be replaced when the script executes",
   "main": "./dist/logupts.js",
   "types": "./dist/logupts.d.ts",
