@@ -8,3 +8,4 @@ doc
 test/node.js
 old**
 dist/dist/
+dist/*.spec.js*
