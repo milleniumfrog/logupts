@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jasmine --config=jasmine.json",
     "karma": "karma start",
-    "build": "webpack && tsc && cp ./dist/logupts.d.ts ./dist/logupts.bundle.d.ts",
+    "build": "webpack & tsc & tsc -p tsconfig.umd.json && wait && cp ./dist/logupts.d.ts ./dist/logupts.bundle.d.ts",
     "watch": "webpack --watch & tsc --watch"
   },
   "repository": {
