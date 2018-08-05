@@ -1,8 +1,4 @@
-import { ComplexKey as Placeholder } from './external/strplace';
-
-export { ComplexKey as Placeholder } from './external/strplace';
-
-export const DefaultPlaceholders: Placeholder[] = [
+export const DefaultPlaceholders = [
     // get day 1-31
     {
         keys: ['{{date}}'],
@@ -10,18 +6,18 @@ export const DefaultPlaceholders: Placeholder[] = [
             return `${fillStrWithZeros(2, String((new Date()).getDate()))}`;
         },
         flags: 'g'
-    }, 
+    },
     {
         keys: ['{{day}}'],
         replacer: () => {
             return `${fillStrWithZeros(2, String((new Date()).getDay()))}`;
         },
         flags: 'g'
-    }, 
+    },
     {
         keys: ['{{month}}'],
         replacer: () => {
-            return `${fillStrWithZeros(2, String((new Date()).getMonth()+1))}`;
+            return `${fillStrWithZeros(2, String((new Date()).getMonth() + 1))}`;
         },
         flags: 'g'
     },
@@ -55,25 +51,26 @@ export const DefaultPlaceholders: Placeholder[] = [
     },
     {
         keys: ['{{service}}'],
-        replacer: ( none?: string, passArguments?: any) => {
-           return `[${passArguments.service || 'DEFAULT'}]`;
+        replacer: (none, passArguments) => {
+            return `[${passArguments.service || 'DEFAULT'}]`;
         },
         flags: 'g'
     },
 ];
-
 /**
  * fill up a string with zeros
- * @param length 
- * @param msg 
+ * @param length
+ * @param msg
  */
-export function fillStrWithZeros(length: number, msg: string) {
+export function fillStrWithZeros(length, msg) {
     if (length < msg.length) {
         throw new Error('the message is longer than the wished length.');
-    } else {
+    }
+    else {
         for (let i = msg.length; i < length; ++i) {
             msg = '0' + msg;
         }
     }
     return msg;
 }
+//# sourceMappingURL=placeholder.js.map

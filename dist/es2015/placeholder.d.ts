@@ -1,5 +1,5 @@
-import { ComplexKey as Placeholder } from 'strplace';
-export { ComplexKey as Placeholder } from 'strplace';
+import { ComplexKey as Placeholder } from './external/strplace';
+export { ComplexKey as Placeholder } from './external/strplace';
 export declare const DefaultPlaceholders: Placeholder[];
 /**
  * fill up a string with zeros

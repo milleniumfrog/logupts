@@ -1,5 +1,5 @@
 import { Placeholder, DefaultPlaceholders } from './placeholder';
-import { replaceComplex } from 'strplace';
+import { replaceComplex } from './external/strplace';
 
 export { Placeholder, DefaultPlaceholders } from './placeholder';
 
@@ -25,7 +25,7 @@ export interface LogUpTsOptions {
     logStack?: boolean;
 }
 
-let defaultOptions: LogUpTsOptions = {
+export const defaultOptions: LogUpTsOptions = {
     prefix: '{{service}} ',
     postfix: '',
     placeholders: DefaultPlaceholders,
@@ -37,10 +37,11 @@ let defaultOptions: LogUpTsOptions = {
 };
 
 export class LogUpTs {
-    public internals: object;
+    public internals: any;
     public options: LogUpTsOptions;
 
-    constructor( customOptions?: LogUpTsOptions, setInternals?: object ) {
+    constructor( customOptions?: LogUpTsOptions, setInternals?: any ) {
+        setInternals = setInternals || {};
         customOptions = customOptions || {};
         // set loguptsoptions
         this.options = {
@@ -57,8 +58,8 @@ export class LogUpTs {
         this.internals = {
             service: 'LOG'
         }
-        for ( let key in setInternals || {} ) {
-            (<any>this.internals)[key] = (<any>setInternals)[key];
+        for ( let key in setInternals ) {
+            this.internals[key] = setInternals[key];
         }
     }
     
@@ -76,12 +77,12 @@ export class LogUpTs {
         };
     }
 
-    public async custom( customOptions: LogUpTsOptions, setInternals: object, message: string ): Promise<string> {
+    public async custom( customOptions: LogUpTsOptions, setInternals: any, message: string ): Promise<string> {
         // setoptions
         let opt = this.mergeOptions( customOptions );
         // set new Internalvalues
         for ( let key in setInternals ) {
-            (<any>this.internals)[key] = (<any>setInternals)[key];
+            this.internals[key] = setInternals[key];
         }
         // generate string
         let str: string = `${opt.prefix}${message}${opt.postfix}`;
@@ -95,20 +96,39 @@ export class LogUpTs {
             asyncThings.push( asyncExec( str, this.internals, opt ) );
         }
         await Promise.all( asyncThings );
-        // check 
+        // check if quiet or logtype exists
         if ( !opt.quiet && ((<any>console)[ opt.logType || 'log' ] !== undefined) ) {
             (<any>console)[ opt.logType || 'log' ]( str );
         }
         return str;
     };
+
+    /**
+     * a default log
+     * @param str 
+     * @param customOptions 
+     */
     public async log( str: string, customOptions?: LogUpTsOptions ): Promise<string> {
-        return await this.custom( customOptions || {}, { service: 'LOG' }, str );
+        return this.custom( customOptions || {}, { service: 'LOG' }, str );
     }
+
+    /**
+     * log errors
+     * @param error 
+     * @param customOptions 
+     */
     public async error( error: string | Error, customOptions?: LogUpTsOptions): Promise<string> {
         let opt = this.mergeOptions( customOptions || {} );
         // set logtype to error -> console.error(str)
         opt.logType = 'error';
         let str = error instanceof Error ? `${error.message}${ (opt.logStack && error.stack !== undefined) ? '\n' + error.stack : ''}` : error;
-        return  await this.custom( opt, { service: 'ERROR' }, str );
+        return  this.custom( opt, { service: 'ERROR' }, str );
     }
+    public async warn( message: string, customOptions?: LogUpTsOptions ): Promise<string> {
+        let opt = this.mergeOptions( customOptions || {} );
+        // set logtype to warn -> console.warn(str)
+        opt.logType = 'warn';
+        return this.custom( opt, { service: 'WARN' }, message );
+    }
+
 }

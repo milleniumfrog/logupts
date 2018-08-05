@@ -7,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { DefaultPlaceholders } from './placeholder';
-import { replaceComplex } from 'strplace';
+import { replaceComplex } from './external/strplace';
 export { DefaultPlaceholders } from './placeholder';
-let defaultOptions = {
+export const defaultOptions = {
     prefix: '{{service}} ',
     postfix: '',
     placeholders: DefaultPlaceholders,
@@ -21,6 +21,7 @@ let defaultOptions = {
 };
 export class LogUpTs {
     constructor(customOptions, setInternals) {
+        setInternals = setInternals || {};
         customOptions = customOptions || {};
         // set loguptsoptions
         this.options = {
@@ -37,7 +38,7 @@ export class LogUpTs {
         this.internals = {
             service: 'LOG'
         };
-        for (let key in setInternals || {}) {
+        for (let key in setInternals) {
             this.internals[key] = setInternals[key];
         }
     }
@@ -73,7 +74,7 @@ export class LogUpTs {
                 asyncThings.push(asyncExec(str, this.internals, opt));
             }
             yield Promise.all(asyncThings);
-            // check 
+            // check if quiet or logtype exists
             if (!opt.quiet && (console[opt.logType || 'log'] !== undefined)) {
                 console[opt.logType || 'log'](str);
             }
@@ -81,18 +82,37 @@ export class LogUpTs {
         });
     }
     ;
+    /**
+     * a default log
+     * @param str
+     * @param customOptions
+     */
     log(str, customOptions) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.custom(customOptions || {}, { service: 'LOG' }, str);
+            return this.custom(customOptions || {}, { service: 'LOG' }, str);
         });
     }
+    /**
+     * log errors
+     * @param error
+     * @param customOptions
+     */
     error(error, customOptions) {
         return __awaiter(this, void 0, void 0, function* () {
             let opt = this.mergeOptions(customOptions || {});
             // set logtype to error -> console.error(str)
             opt.logType = 'error';
             let str = error instanceof Error ? `${error.message}${(opt.logStack && error.stack !== undefined) ? '\n' + error.stack : ''}` : error;
-            return yield this.custom(opt, { service: 'ERROR' }, str);
+            return this.custom(opt, { service: 'ERROR' }, str);
+        });
+    }
+    warn(message, customOptions) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let opt = this.mergeOptions(customOptions || {});
+            // set logtype to warn -> console.warn(str)
+            opt.logType = 'warn';
+            return this.custom(opt, { service: 'WARN' }, message);
         });
     }
 }
+//# sourceMappingURL=logupts.js.map

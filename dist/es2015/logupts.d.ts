@@ -21,12 +21,24 @@ export interface LogUpTsOptions {
     /** log error.stack to console */
     logStack?: boolean;
 }
+export declare const defaultOptions: LogUpTsOptions;
 export declare class LogUpTs {
-    internals: object;
+    internals: any;
     options: LogUpTsOptions;
-    constructor(customOptions?: LogUpTsOptions, setInternals?: object);
+    constructor(customOptions?: LogUpTsOptions, setInternals?: any);
     mergeOptions(customOptions: LogUpTsOptions): LogUpTsOptions;
-    custom(customOptions: LogUpTsOptions, setInternals: object, message: string): Promise<string>;
+    custom(customOptions: LogUpTsOptions, setInternals: any, message: string): Promise<string>;
+    /**
+     * a default log
+     * @param str
+     * @param customOptions
+     */
     log(str: string, customOptions?: LogUpTsOptions): Promise<string>;
+    /**
+     * log errors
+     * @param error
+     * @param customOptions
+     */
     error(error: string | Error, customOptions?: LogUpTsOptions): Promise<string>;
+    warn(message: string, customOptions?: LogUpTsOptions): Promise<string>;
 }
