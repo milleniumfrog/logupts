@@ -10,7 +10,6 @@
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DefaultPlaceholders = [
-        // get day 1-31
         {
             keys: ['{{date}}'],
             replacer: () => {
@@ -68,11 +67,6 @@
             flags: 'g'
         },
     ];
-    /**
-     * fill up a string with zeros
-     * @param length
-     * @param msg
-     */
     function fillStrWithZeros(length, msg) {
         if (length < msg.length) {
             throw new Error('the message is longer than the wished length.');

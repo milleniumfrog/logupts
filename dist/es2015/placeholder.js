@@ -1,5 +1,4 @@
 export const DefaultPlaceholders = [
-    // get day 1-31
     {
         keys: ['{{date}}'],
         replacer: () => {
@@ -57,11 +56,6 @@ export const DefaultPlaceholders = [
         flags: 'g'
     },
 ];
-/**
- * fill up a string with zeros
- * @param length
- * @param msg
- */
 export function fillStrWithZeros(length, msg) {
     if (length < msg.length) {
         throw new Error('the message is longer than the wished length.');
