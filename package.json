@@ -8,7 +8,7 @@
     "test": "mocha -r node_modules/ts-node/register src/**/*.spec.ts",
     "watch": "tsc --watch & rollup -c --watch",
     "karma": "karma start",
-    "build": "tsc -p tsconfig.es2015.json && tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.es2015.json && tsc -p tsconfig.json && rollup -c && uglifyjs dist/browser/logupts.js -o dist/browser/logupts.min.js",
     "externals": "npm update strplace && cp node_modules/strplace/src/strplace.ts src/external/strplace.ts"
   },
   "repository": {
@@ -36,7 +36,7 @@
     "strplace": "0.0.4",
     "ts-node": "^7.0.0",
     "typescript": "^2.9.2",
-    "uglify-es": "^3.3.9"
+    "uglify-js": "^3.4.6"
   },
   "dependencies": {}
 }
