@@ -44,16 +44,7 @@ export class LogUpTs {
         setInternals = setInternals || {};
         customOptions = customOptions || {};
         // set loguptsoptions
-        this.options = {
-            prefix: customOptions.prefix !== undefined ? customOptions.prefix : defaultOptions.prefix,
-            postfix: customOptions.postfix !== undefined ? customOptions.postfix : defaultOptions.postfix,
-            placeholders: customOptions.placeholders !== undefined ? customOptions.placeholders : defaultOptions.placeholders,
-            quiet:  customOptions.quiet !== undefined ? customOptions.quiet : defaultOptions.quiet,
-            transports:  customOptions.transports !== undefined ? customOptions.transports : defaultOptions.transports,
-            customFunctions:  customOptions.customFunctions !== undefined ? customOptions.customFunctions : defaultOptions.customFunctions,
-            logType:   customOptions.logType !== undefined ? customOptions.logType : defaultOptions.logType,
-            logStack:   customOptions.logStack !== undefined ? customOptions.logStack : defaultOptions.logStack,
-        };
+        this.options =  this.mergeOptions( customOptions, defaultOptions );
         // set defaultinternals
         this.internals = {
             service: 'LOG'
@@ -63,16 +54,17 @@ export class LogUpTs {
         }
     }
     
-    public mergeOptions( customOptions: LogUpTsOptions ): LogUpTsOptions {
+    public mergeOptions( customOptions: LogUpTsOptions, fillOptions?: LogUpTsOptions ): LogUpTsOptions {
+        fillOptions = fillOptions || this.options;
         return {
-            prefix: customOptions.prefix !== undefined ? customOptions.prefix : this.options.prefix,
-            postfix: customOptions.postfix !== undefined ? customOptions.postfix : this.options.postfix,
-            placeholders: customOptions.placeholders !== undefined ? customOptions.placeholders : this.options.placeholders,
-            quiet:  customOptions.quiet !== undefined ? customOptions.quiet : this.options.quiet,
-            transports:  customOptions.transports !== undefined ? customOptions.transports : this.options.transports,
-            customFunctions:  customOptions.customFunctions !== undefined ? customOptions.customFunctions : this.options.customFunctions,
-            logType:   customOptions.logType !== undefined ? customOptions.logType : this.options.logType,
-            logStack:   customOptions.logStack !== undefined ? customOptions.logStack : this.options.logStack,
+            prefix: customOptions.prefix !== undefined ? customOptions.prefix : fillOptions.prefix,
+            postfix: customOptions.postfix !== undefined ? customOptions.postfix : fillOptions.postfix,
+            placeholders: customOptions.placeholders !== undefined ? customOptions.placeholders : fillOptions.placeholders,
+            quiet:  customOptions.quiet !== undefined ? customOptions.quiet : fillOptions.quiet,
+            transports:  customOptions.transports !== undefined ? customOptions.transports : fillOptions.transports,
+            customFunctions:  customOptions.customFunctions !== undefined ? customOptions.customFunctions : fillOptions.customFunctions,
+            logType:   customOptions.logType !== undefined ? customOptions.logType : fillOptions.logType,
+            logStack:   customOptions.logStack !== undefined ? customOptions.logStack : fillOptions.logStack,
 
         };
     }

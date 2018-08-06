@@ -1,21 +1,21 @@
-import * as chai from 'chai';
+import { expect } from 'chai';
 import { LogUpTs, LogUpTsOptions } from './logupts';
 
 describe( 'LogUpTs', () => {
     it( 'log to console without Transport and customFunctions', async () => {
         let logger: LogUpTs = new LogUpTs( <LogUpTsOptions>{ quiet: true } );
         let l: string = await logger.log( 'hello' );
-        chai.expect( l ).to.eql( '[LOG] hello' );
+        expect( l ).to.eql( '[LOG] hello' );
         // change prefix to a timestamp
         logger.options.prefix  = '{{year}} ';
         l = await logger.log( 'hello' );
-        chai.expect( l ).to.eql( '2018 hello' );
+        expect( l ).to.eql( '2018 hello' );
     } );
 
     it( 'log error to console without Transport and customFunctions, without Stack', async () => {
         let logger: LogUpTs = new LogUpTs( <LogUpTsOptions>{ quiet: true, logStack: false } );
         let l: string = await logger.error( new Error( 'a Error happend') );
-        chai.expect( l ).to.eql( '[ERROR] a Error happend' );
+        expect( l ).to.eql( '[ERROR] a Error happend' );
     });
 
     it( 'log error to console without Transport and customFunctions, with Stack', async () => {
@@ -49,6 +49,6 @@ describe( 'LogUpTs', () => {
         };
         let logger: LogUpTs = new LogUpTs( conf, {} );
         let str: string = await logger.log( '<a>hello <maintainer /></a>' );
-        chai.expect( str ).to.eql( 'hello milleniumfrog' );
+        expect( str ).to.eql( 'hello milleniumfrog' );
     })
 });
