@@ -1,7 +1,6 @@
-import { Placeholder, DefaultPlaceholders } from './placeholder';
-import { replaceComplex } from './external/strplace';
+import { Placeholder, DefaultPlaceholders, replacePlaceholder } from './placeholder';
 
-export { Placeholder, DefaultPlaceholders } from './placeholder';
+export { Placeholder, DefaultPlaceholders, replacePlaceholder } from './placeholder';
 
 export interface Transport {
     exec: ( transportOptions: any, str: string ) => Promise<void>;
@@ -78,7 +77,7 @@ export class LogUpTs {
         }
         // generate string
         let str: string = `${opt.prefix}${message}${opt.postfix}`;
-        str = replaceComplex( (this.options.placeholders || []), str, this.internals );
+        str = replacePlaceholder( (this.options.placeholders || []), str, this.internals );
         let asyncThings: Promise<any>[] = [];
         // add transports
         for ( let transport of opt.transports || [] ) {

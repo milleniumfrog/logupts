@@ -1,6 +1,6 @@
 import { ComplexKey as Placeholder } from './external/strplace';
 
-export { ComplexKey as Placeholder } from './external/strplace';
+export { ComplexKey as Placeholder, replaceComplex as replacePlaceholder } from './external/strplace';
 
 export const DefaultPlaceholders: Placeholder[] = [
     // get day 1-31
