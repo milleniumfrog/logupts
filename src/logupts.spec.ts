@@ -83,9 +83,10 @@ describe( 'LogUpTs', () => {
             info( msg: string ) {
                 this.options.logType = 'LOG';
                 this.internals.service = 'INFO'
-                super.custom(this.options, this.internals, "hello");
+                return super.custom(this.options, this.internals, "hello");
             }
         }
         let logger= new eLogUpTs();
+        expect( await logger.info( "hello" ) ).to.eql( "[INFO] hello" );
     } )
 });
