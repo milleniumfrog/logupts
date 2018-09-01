@@ -1,5 +1,5 @@
 import { Placeholder } from './placeholder';
-export { Placeholder, DefaultPlaceholders } from './placeholder';
+export { Placeholder, DefaultPlaceholders, replacePlaceholder } from './placeholder';
 export interface Transport {
     exec: (transportOptions: any, str: string) => Promise<void>;
 }
@@ -14,7 +14,7 @@ export interface LogUpTsOptions {
     logStack?: boolean;
 }
 export declare const defaultOptions: LogUpTsOptions;
-export declare class LogUpTs {
+export declare class LogUpTs<T = {}> {
     internals: any;
     options: LogUpTsOptions;
     constructor(customOptions?: LogUpTsOptions, setInternals?: any);

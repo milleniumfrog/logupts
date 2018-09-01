@@ -51,13 +51,11 @@ export class FileTransport implements Transport {
      * @param str 
      */
     public exec( internalOptions: any, str: string ): Promise<void> {
-        if ( internalOptions.file === undefined )
+        if ( internalOptions.service === undefined )
             throw new Error( 'interrnal Options file are not set' )
-        for ( let print of this.toPrint ) {
-            if ( this.toPrint.indexOf( 'ALL' ) >= 0 || this.toPrint.indexOf( internalOptions.file.toPrint ) >= 0 )
+        if ( this.toPrint.indexOf( 'ALL' ) >= 0 || this.toPrint.indexOf( internalOptions.service ) >= 0 )
             this._que.push( [internalOptions, str] );
-        }
-
+    
         if ( !this._running )
             this._run();
         else

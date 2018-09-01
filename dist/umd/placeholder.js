@@ -4,11 +4,13 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports"], factory);
+        define(["require", "exports", "./external/strplace"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var strplace_1 = require("./external/strplace");
+    exports.replacePlaceholder = strplace_1.replaceComplex;
     exports.DefaultPlaceholders = [
         {
             keys: ['{{date}}'],

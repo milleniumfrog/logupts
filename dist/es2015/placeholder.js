@@ -1,3 +1,4 @@
+export { replaceComplex as replacePlaceholder } from './external/strplace';
 export const DefaultPlaceholders = [
     {
         keys: ['{{date}}'],

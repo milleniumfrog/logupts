@@ -6,9 +6,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { DefaultPlaceholders } from './placeholder';
-import { replaceComplex } from './external/strplace';
-export { DefaultPlaceholders } from './placeholder';
+import { DefaultPlaceholders, replacePlaceholder } from './placeholder';
+export { DefaultPlaceholders, replacePlaceholder } from './placeholder';
 export const defaultOptions = {
     prefix: '{{service}} ',
     postfix: '',
@@ -51,7 +50,7 @@ export class LogUpTs {
                 this.internals[key] = setInternals[key];
             }
             let str = `${opt.prefix}${message}${opt.postfix}`;
-            str = replaceComplex((this.options.placeholders || []), str, this.internals);
+            str = replacePlaceholder((this.options.placeholders || []), str, this.internals);
             let asyncThings = [];
             for (let transport of opt.transports || []) {
                 asyncThings.push(transport.exec(this.internals, str));

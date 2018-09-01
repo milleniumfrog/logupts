@@ -12,15 +12,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./placeholder", "./external/strplace", "./placeholder"], factory);
+        define(["require", "exports", "./placeholder", "./placeholder"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const placeholder_1 = require("./placeholder");
-    const strplace_1 = require("./external/strplace");
     var placeholder_2 = require("./placeholder");
     exports.DefaultPlaceholders = placeholder_2.DefaultPlaceholders;
+    exports.replacePlaceholder = placeholder_2.replacePlaceholder;
     exports.defaultOptions = {
         prefix: '{{service}} ',
         postfix: '',
@@ -63,7 +63,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     this.internals[key] = setInternals[key];
                 }
                 let str = `${opt.prefix}${message}${opt.postfix}`;
-                str = strplace_1.replaceComplex((this.options.placeholders || []), str, this.internals);
+                str = placeholder_1.replacePlaceholder((this.options.placeholders || []), str, this.internals);
                 let asyncThings = [];
                 for (let transport of opt.transports || []) {
                     asyncThings.push(transport.exec(this.internals, str));

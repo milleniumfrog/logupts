@@ -34,7 +34,7 @@ describe( 'LogUpTs', () => {
                 {
                     keys: ['<a>', '</a>'],
                     replacer: ( abs?: string, passArg?: any ) => {
-                        return abs || '';
+                        return '<link>' + abs;
                     },
                     flags: 'g',
                 },
@@ -49,6 +49,25 @@ describe( 'LogUpTs', () => {
         };
         let logger: LogUpTs = new LogUpTs( conf, {} );
         let str: string = await logger.log( '<a>hello <maintainer /></a>' );
-        expect( str ).to.eql( 'hello milleniumfrog' );
+        expect( str ).to.eql( '<link>hello milleniumfrog' );
     })
+
+    it( 'test async functions', async () => {
+        let changed: boolean = false;
+        let options: LogUpTsOptions = { quiet: true };
+        options.customFunctions = [];
+        options.customFunctions.push( async ( param: string, internals: any, options: LogUpTsOptions) => {
+            changed = true;
+        } )
+        let logger: LogUpTs = new LogUpTs( options );
+        await logger.log( 'hello' );
+        expect( changed ).to.eql( true );
+    } )
+    it( 'create new custom function', async () => {
+        let logger: LogUpTs | (LogUpTs & { info: ( str: string ) => Promise<string> })= new LogUpTs(  );
+        let info: ( str: string ) => Promise<string> = async ( str: string) => {
+            logger.internals.service = "INFO"
+            return logger.custom( logger.options, logger.internals, str );
+        }
+    } )
 });

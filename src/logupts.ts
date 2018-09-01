@@ -2,9 +2,25 @@ import { Placeholder, DefaultPlaceholders, replacePlaceholder } from './placehol
 
 export { Placeholder, DefaultPlaceholders, replacePlaceholder } from './placeholder';
 
+/**
+ * Transport Logmessage
+ */
 export interface Transport {
     exec: ( transportOptions: any, str: string ) => Promise<void>;
 }
+
+/**
+ * configure LogUpTs
+ * configure
+ * - prefix
+ * - postfix
+ * - placeholders
+ * - quiet (log it to console)
+ * - transports
+ * - customfunction (run functions when log gets executed)
+ * - logtype (log/info/error)
+ * - logstack
+ */
 export interface LogUpTsOptions {
     /** set the prefix */
     prefix?: string;
@@ -24,6 +40,9 @@ export interface LogUpTsOptions {
     logStack?: boolean;
 }
 
+/**
+ * default LogUpTsoptions
+ */
 export const defaultOptions: LogUpTsOptions = {
     prefix: '{{service}} ',
     postfix: '',
@@ -35,7 +54,7 @@ export const defaultOptions: LogUpTsOptions = {
     logStack: true,
 };
 
-export class LogUpTs {
+export class LogUpTs<T = {}> {
     public internals: any;
     public options: LogUpTsOptions;
 
@@ -53,6 +72,11 @@ export class LogUpTs {
         }
     }
     
+    /**
+     * merge LogUpTs options to one option object
+     * @param customOptions 
+     * @param fillOptions 
+     */
     public mergeOptions( customOptions: LogUpTsOptions, fillOptions?: LogUpTsOptions ): LogUpTsOptions {
         fillOptions = fillOptions || this.options;
         return {
@@ -115,6 +139,12 @@ export class LogUpTs {
         let str = error instanceof Error ? `${error.message}${ (opt.logStack && error.stack !== undefined) ? '\n' + error.stack : ''}` : error;
         return  this.custom( opt, { service: 'ERROR' }, str );
     }
+
+    /**
+     * warn
+     * @param message 
+     * @param customOptions 
+     */
     public async warn( message: string, customOptions?: LogUpTsOptions ): Promise<string> {
         let opt = this.mergeOptions( customOptions || {} );
         // set logtype to warn -> console.warn(str)
