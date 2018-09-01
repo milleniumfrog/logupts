@@ -63,11 +63,29 @@ describe( 'LogUpTs', () => {
         await logger.log( 'hello' );
         expect( changed ).to.eql( true );
     } )
+
     it( 'create new custom function', async () => {
         let logger: LogUpTs | (LogUpTs & { info: ( str: string ) => Promise<string> })= new LogUpTs(  );
         let info: ( str: string ) => Promise<string> = async ( str: string) => {
-            logger.internals.service = "INFO"
+            logger.options.logType = "INFO";
+            logger.internals.service = "INFO";
             return logger.custom( logger.options, logger.internals, str );
         }
+        expect( await info( "hello" ) ).to.eql( "[INFO] hello" );    
+    } )
+
+    it( 'inherit class with new function', async () => {
+        class eLogUpTs extends LogUpTs {
+            constructor() {
+                super( {quiet: true} );
+            }
+
+            info( msg: string ) {
+                this.options.logType = 'LOG';
+                this.internals.service = 'INFO'
+                super.custom(this.options, this.internals, "hello");
+            }
+        }
+        let logger= new eLogUpTs();
     } )
 });

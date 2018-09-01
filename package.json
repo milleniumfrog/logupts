@@ -8,8 +8,8 @@
     "test": "rm -Rf log && mocha -r node_modules/ts-node/register src/**/*.spec.ts",
     "watch": "tsc --watch & rollup -c --watch",
     "karma": "karma start",
-    "build": "tsc -p tsconfig.es2015.json && tsc -p tsconfig.json && rollup -c && uglifyjs dist/browser/logupts.js -o dist/browser/logupts.min.js",
-    "externals": "npm update strplace && cp node_modules/strplace/src/strplace.ts src/external/strplace.ts"
+    "build": "sh ./shellscripts/build.sh",
+    "externals": "sh ./shellscripts/externals.sh"
   },
   "repository": {
     "type": "git",
