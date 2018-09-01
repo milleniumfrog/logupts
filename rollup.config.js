@@ -3,7 +3,8 @@ module.exports = {
     output: {
         file: 'dist/browser/logupts.js',
         format: 'umd',
-        name: 'logupts'
+        name: 'logupts',
+        sourcemap: 'true',
+        sourcemapFile: 'dist/browser/logupts.js.map'
     }
-
 }
