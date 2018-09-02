@@ -2,11 +2,11 @@
 import { LogUpTs, LogUpTsOptions } from './logupts';
 import { FileTransport, FileInternals } from './file-transport';
 
-if ( typeof module === "object" && typeof module.exports === "object" ) {
+if ( typeof window === 'undefined' ) {
+
     describe( 'LogUpTs File Transport', () => {
         it( 'write to log/test1.log', async () => {
-
-            
+            console.log("hello world");
             let options: LogUpTsOptions = {
                 transports: [ new FileTransport( 'test1.log', '../log', [ 'ALL' ] ) ],
                 quiet: true,

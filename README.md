@@ -149,3 +149,6 @@ class eLogUpTs extends LogUpTs {
 let logger= new eLogUpTs();
 logger.info( "hello" ) // "[INFO] hello"
 ```
+
+### LICENSE MIT
+### MAINTAINER: milleniumfrog

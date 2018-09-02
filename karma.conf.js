@@ -22,7 +22,8 @@ module.exports = function(config) {
 
       karmaTypescriptConfig: {
         compilerOptions: {
-          target: 'es2015'
+          target: 'es2015',
+          "allowSyntheticDefaultImports": true
         }
       }
   });
