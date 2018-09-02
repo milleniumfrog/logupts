@@ -153,3 +153,5 @@ export class LogUpTs<T = {}> {
     }
 
 }
+
+export default LogUpTs;
