@@ -1,12 +1,10 @@
-// import placeholders
+// import Placeholderclass and the defaultPlaceholders
 import { Placeholder, defaultPlaceholders } from './placeholders';
-// export the Placeholderclass
+// export the Placeholderclass and the defaultplaceholders
 export { Placeholder, defaultPlaceholders }
-// export debuglevel for development
-export const DEBUG = true;
-
 /**
- * configure your LogUpTs object with this options
+ * Configinterface for LogUpTs,
+ * change prefixes, placeholders...
  */
 export interface LogUpTsOptions {
     [index: string]: any;
@@ -26,14 +24,24 @@ export interface LogUpTsOptions {
     customAsyncExecutions?: ((...params: any[]) => Promise<any>)[]
 }
 
+/**
+ * export type text, its a string for stringarray
+ */
 export type text = Array<string> | string;
 
 export interface InternalLogUpTsOptions {
+    [index: string]: any
     activeService?: string;
-    groups?: Array<string>
+    /** which groups contains this element, important
+     * for using a transportplugin
+     */
+    groups?: Array<string>;
+    /** pass more informations to the transportplugin */
+    transport?: any;
 }
 
 export interface Transport {
+    [index: string]: any;
     exec: (transportOptions: InternalLogUpTsOptions, str: string) => Promise<any>;
     key: string;
 }
@@ -41,7 +49,8 @@ export interface Transport {
 export class LogUpTs {
     public loguptsOptions: LogUpTsOptions;
     public placeholderVars: any;
-    constructor(newLogUpTsOptions: LogUpTsOptions = {}) {
+
+    constructor(newLogUpTsOptions: LogUpTsOptions = {}, private debug:boolean = false) {
         this.loguptsOptions = this.defaultLogUpTsOptions();
         this.placeholderVars = {
             activeService: 'LOG'

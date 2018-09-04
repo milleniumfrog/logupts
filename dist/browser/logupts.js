@@ -45,9 +45,9 @@ var logupts = (function (exports) {
         return msg;
     }
 
-    const DEBUG = true;
     class LogUpTs {
-        constructor(newLogUpTsOptions = {}) {
+        constructor(newLogUpTsOptions = {}, debug = false) {
+            this.debug = debug;
             this.loguptsOptions = this.defaultLogUpTsOptions();
             this.placeholderVars = {
                 activeService: 'LOG'
@@ -249,7 +249,6 @@ var logupts = (function (exports) {
 
     exports.Placeholder = Placeholder;
     exports.defaultPlaceholders = defaultPlaceholders;
-    exports.DEBUG = DEBUG;
     exports.LogUpTs = LogUpTs;
 
     return exports;

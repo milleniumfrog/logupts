@@ -12,9 +12,9 @@
     const placeholders_1 = require("./placeholders");
     exports.Placeholder = placeholders_1.Placeholder;
     exports.defaultPlaceholders = placeholders_1.defaultPlaceholders;
-    exports.DEBUG = true;
     class LogUpTs {
-        constructor(newLogUpTsOptions = {}) {
+        constructor(newLogUpTsOptions = {}, debug = false) {
+            this.debug = debug;
             this.loguptsOptions = this.defaultLogUpTsOptions();
             this.placeholderVars = {
                 activeService: 'LOG'
