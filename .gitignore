@@ -7,3 +7,8 @@ dist/temp/
 doc
 test/node.js
 old**
+dist/dist/
+dist/**/*.spec.*
+dist/test
+coverage
+out
