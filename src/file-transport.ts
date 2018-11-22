@@ -50,17 +50,16 @@ export class FileTransport implements Transport {
      * @param internalOptions 
      * @param str 
      */
-    public exec( internalOptions: any, str: string ): Promise<void> {
+    public async exec( internalOptions: any, str: string ): Promise<void> {
         if ( internalOptions.service === undefined )
             throw new Error( 'interrnal Options file are not set' )
         if ( this.toPrint.indexOf( 'ALL' ) >= 0 || this.toPrint.indexOf( internalOptions.service ) >= 0 )
             this._que.push( [internalOptions, str] );
     
         if ( !this._running )
-            this._run();
+            await this._run();
         else
             this._running = true;
-        return Promise.resolve();
     }
 
     /**

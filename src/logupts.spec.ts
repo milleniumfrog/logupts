@@ -1,92 +1,105 @@
 import { expect } from 'chai';
-import { LogUpTs, LogUpTsOptions } from './logupts';
+import { LogUpTs, defaultOptions, LogUpTsOptions, LogUpTsTemplateTypeInterface, Transport } from './logupts';
+import { DefaultPlaceholders } from './placeholder';
 
-describe( 'LogUpTs', () => {
-    it( 'log to console without Transport and customFunctions', async () => {
-        let logger: LogUpTs = new LogUpTs( <LogUpTsOptions>{ quiet: true } );
-        let l: string = await logger.log( 'hello' );
-        expect( l ).to.eql( '[LOG] hello' );
-        // change prefix to a timestamp
-        logger.options.prefix  = '{{year}} ';
-        l = await logger.log( 'hello' );
-        expect( l ).to.eql( '2018 hello' );
-    } );
+describe( 'class LogUpTs:', () => {
 
-    it( 'log error to console without Transport and customFunctions, without Stack', async () => {
-        let logger: LogUpTs = new LogUpTs( <LogUpTsOptions>{ quiet: true, logStack: false } );
-        let l: string = await logger.error( new Error( 'a Error happend') );
-        expect( l ).to.eql( '[ERROR] a Error happend' );
-    });
+	it( 'run with default settings', async () => {
+		const logger = new LogUpTs( { quiet: true } );
+		expect( await logger.log( 'first' ) ).to.eql( '[LOG] first' );
+		expect( await logger.error( 'second' ) ).to.eql( '[ERROR] second' );
+		expect( (await logger.error( new Error( 'third' ) )).substr( 0, 13 ) ).to.eql( '[ERROR] third' );
+		expect( await logger.custom( logger.options, logger.internals, 'fourth' ) ).to.eql( '[ERROR] fourth' );
+		expect( await logger.warn( 'fifth' ) ).to.eql( '[WARN] fifth' );
+		expect( logger.options.placeholders ).to.eql( DefaultPlaceholders );
+		expect( JSON.stringify( logger.mergeOptions( logger.options ) ) ).to.eql( JSON.stringify( Object.assign( {}, defaultOptions, { quiet: true } ) ) );
+	} );
 
-    it( 'log error to console without Transport and customFunctions, with Stack', async () => {
-        let logger: LogUpTs = new LogUpTs( <LogUpTsOptions>{ quiet: true, logStack: true } );
-        let l: string = await logger.error( new Error( 'a Error happend') );
-        if ( l.length < 100 ) {
-            throw new Error( 'string is a lot to short' );
-        }
-    });
 
-    it( 'add a new Placeholder and replace the defaultplaceholders', async () => {
-        let conf: LogUpTsOptions = {
-            quiet: true,
-            prefix: '',
-            placeholders: [
-                {
-                    keys: ['<a>', '</a>'],
-                    replacer: ( abs?: string, passArg?: any ) => {
-                        return '<link>' + abs;
-                    },
-                    flags: 'g',
-                },
-                {
-                    keys: ['<maintainer />'],
-                    flags: 'g',
-                    replacer: () => {
-                        return 'milleniumfrog';
-                    }
-                }
-            ],
-        };
-        let logger: LogUpTs = new LogUpTs( conf, {} );
-        let str: string = await logger.log( '<a>hello <maintainer /></a>' );
-        expect( str ).to.eql( '<link>hello milleniumfrog' );
-    })
+	describe( 'run with custom options', () => {
 
-    it( 'test async functions', async () => {
-        let changed: boolean = false;
-        let options: LogUpTsOptions = { quiet: true };
-        options.customFunctions = [];
-        options.customFunctions.push( async ( param: string, internals: any, options: LogUpTsOptions) => {
-            changed = true;
-        } )
-        let logger: LogUpTs = new LogUpTs( options );
-        await logger.log( 'hello' );
-        expect( changed ).to.eql( true );
-    } )
+		it( 'no placeholders', async () => {
+			const customOptions: LogUpTsOptions = { quiet: true, placeholders: [] };
+			const logger = new LogUpTs( customOptions );
+			expect( await logger.log( 'first' ) ).to.eql( '{{service}} first' );
+		} );
 
-    it( 'create new custom function', async () => {
-        let logger: LogUpTs | (LogUpTs & { info: ( str: string ) => Promise<string> })= new LogUpTs(  );
-        let info: ( str: string ) => Promise<string> = async ( str: string) => {
-            logger.options.logType = "INFO";
-            logger.internals.service = "INFO";
-            return logger.custom( logger.options, logger.internals, str );
-        }
-        expect( await info( "hello" ) ).to.eql( "[INFO] hello" );    
-    } )
+		it( 'logStack === false', async () => {
+			const customOptions: LogUpTsOptions = { quiet: true, logStack: false };
+			const logger = new LogUpTs( customOptions );
+			expect( await logger.error( new Error( 'first' ) ) ).to.eql( '[ERROR] first' );
+			expect( await logger.log( 'second' ) ).to.eql( '[LOG] second' );
+		} );
 
-    it( 'inherit class with new function', async () => {
-        class eLogUpTs extends LogUpTs {
-            constructor() {
-                super( {quiet: true} );
-            }
+		it( 'with postfix', async () => {
+			const customOptions: LogUpTsOptions = { quiet: true, postfix: ' {{service}}' };
+			const logger = new LogUpTs( customOptions );
+			expect( await logger.log( 'first' ) ).to.eql( '[LOG] first [LOG]' );
+		} );
 
-            info( msg: string ) {
-                this.options.logType = 'LOG';
-                this.internals.service = 'INFO'
-                return super.custom(this.options, this.internals, "hello");
-            }
-        }
-        let logger= new eLogUpTs();
-        expect( await logger.info( "hello" ) ).to.eql( "[INFO] hello" );
-    } )
-});
+		it( 'without prefix', async () => {
+			const customOptions: LogUpTsOptions = { quiet: true, prefix: '' };
+			const logger = new LogUpTs( customOptions );
+			expect( await logger.log( 'first' ) ).to.eql( 'first' );
+		} );
+
+		it( 'with custom functions', async () => {
+			let counter: number = 0;
+			const customFunc = async (param: string, internals: LogUpTsTemplateTypeInterface, options: LogUpTsOptions<LogUpTsTemplateTypeInterface> ) => { ++counter };
+			const customOptions: LogUpTsOptions = { quiet: true, customFunctions: [customFunc] };
+			const logger = new LogUpTs( customOptions );
+			await logger.log( 'first' );
+			await logger.error( 'second' );
+			expect( counter ).to.eql( 2 );
+		} );
+
+		it( 'with transport function', async () => {
+			let counter: number = 0;
+			const transportMock: Transport = { async exec( transportOptions: LogUpTsTemplateTypeInterface, str: string ) { ++counter} };
+			const customOptions: LogUpTsOptions =  { quiet: true, transports: [transportMock]};
+			const logger = new LogUpTs( customOptions );
+			await logger.log( 'first' );
+			await logger.error( 'second' );
+			expect( counter ).to.eql( 2 );
+		} )
+
+	} );
+
+	describe( 'extend logupts', () => {
+
+		it( 'create custom function with logger.custom', async () => {
+			const logger = new LogUpTs( { quiet: true } );
+			const log = ( msg: string ) => logger.log( msg );
+			const error = (msg: string ) => logger.error( msg );
+			const page = ( msg: string ) => logger.custom( {},  {service: 'PAGE' }, msg );
+			expect( await log( 'first' ) ).to.eql( '[LOG] first' );
+			expect( await error( 'second' ) ).to.eql( '[ERROR] second' );
+			expect( await page( 'third' ) ).to.eql( '[PAGE] third' );
+		} );
+
+		it( 'extend the class', async () => {
+			class eLogUpTs extends LogUpTs {
+				public functionCounter: number;
+				constructor() {
+					super( { quiet: true } );
+					this.functionCounter = 0;
+				}
+				async page( msg: string ) {
+					++this.functionCounter;
+					return this.custom( this.options, Object.assign( this.internals, { service: 'PAGE' } ), msg );
+				}
+				async log( msg: string ) {
+					++this.functionCounter;
+					return super.log( msg );
+				}
+			}
+			const logger = new eLogUpTs();
+			await logger.log( 'first' );
+			expect( await logger.page( 'second' ) ).to.eql( '[PAGE] second' );
+			await logger.warn( 'third' );											// doesnt increase functioncounter
+			expect( logger.functionCounter ).to.eql( 2 ); 
+		} );
+		
+	} );
+
+} )
