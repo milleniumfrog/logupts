@@ -1,114 +1,108 @@
-# LogUpTs 
+# LogUpTs v3.0.x
 
-Version: 3.0.x Beta
+[![](https://data.jsdelivr.com/v1/package/npm/logupts/badge)](https://www.jsdelivr.com/package/npm/logupts)
 
-LogUpTs is designed as an extendable logging library for nodejs and the browser in typescript, but it is also usable in javascript.
-With LogUpTs you are able to use placeholders ("{{day}}:{{month}}:{{year}}" -> "01.01.1970 )
-and transports (for example the file transport).
+LogUpTs is an easy extendable Logging Library for the browser and nodejs.
+It supports Logging to files or (with plugins) to other destinations.
+Additionally LogUpTs comes with support for placeholders for example the year, month, day, ....
+So it's easy to create timestamps or pass other important data to the logs without manually
+merging strings.
 
-## INSTALLATION
-### Typescript
-Supported Modules: ES2015, AMD, COMMONJS
+## Installation
+### npm:
 ```bash
-npm install --save logupts
+$ npm install --save logupts
 ```
-```typescript
-// ES2015
+### cdn:
+browser: via script
+```html
+<script src="https://cdn.jsdelivr.net/npm/logupts@3/dist/browser/logupts.min.js"></script>
+<script>
+	const logger = new logupts.LogUpTs();
+	logger.log("hello world");
+</script>
+```
+browser: via amd
+```javascript
+require.config({
+   paths:{ 
+     logupts:"//cdn.jsdelivr.net/npm/logupts@3/dist/browser/logupts.min"
+   }
+});
+require( ['logupts'], ( logupts ) => {
+    let logger = new loguptspackage.LogUpTs();
+  	logger.log("hello world");
+} )
+```
+es2015 version for bundlers: (also for typescript)
+```javascript
 import { LogUpTs } from 'logupts';
-// UMD -> AMD and COMMONJS
-import { LOGUPTS } from 'logupts/dist/umd/logupts';
-
+...
 ```
-### Javascript Doc <- Work in Progress
-
-## Usage
-### Basic
+## Quick start
+An example typescript/javascript (for javascript just ignore types) code:
 ```typescript
-let logger: LogUpTs = new LogUpTs();
-logger.log( "hello world" ); // [LOG] hello world
-logger.warn( "hello world" ); // [WARN] hello world
-logger.error( "this is an error" ); // [ERROR] this is an error
-let err: Error = new Error( "a new Error" );
-logger.error( err ); // [ERROR] a new Error ...
+import { LogUpTs } from 'logupts';
+const logger = new LogUpTs();
+// just log to console
+logger.log( 'hello world' );
+logger.error( 'a wild error appeared' );
+logger.error( new Error( 'a second error' ) );
+// use returned string promise
+logger.warn( 'test' ).then( (value: string) => { return value === "[WARN] test" } );
+// use await/async
+(async (): Promise<boolean> => {
+	const test = await logger.log("hello world");
+	return test === "[LOG] hello world2";
+})();
+logger.log( '{{year}}' );
 ```
-### Configuration
-this are the default options for logupts
-```typescript
-const defaultOptions: LogUpTsOptions = {
-    prefix: '{{service}} ',
-    postfix: '',
-    placeholders: DefaultPlaceholders,
-    quiet: false,
-    transports: [],
-    customFunctions: [],
-    logType: 'log',
-    logStack: true,
-};
-let logger: LogUpTs = new LogUpTs( defaultOptions );
+console output:
+```bash
+[LOG] hello world
+[ERROR] a wild error appeared
+[ERROR] a second error
+	at ...
+	at Generator.next (<anonymous>)
+	at ...
+[WARN] test
+[LOG] hello world2
+[LOG] 2018
 ```
-
-one of my favorite configurations:
+## Configurations
+As you can see in the example above has every log entry a prefix (here LOG, ERROR, WARN).
+You can change the prefix in this way.
 ```typescript
-let options: LogUpTsOptions = {
-    transports: [  new FileTransport( 'test2.log', '../log', [ 'ERROR' ] ) ],
-    prefix: "{{service}} [MYFILE.ts]"
-};
-let logger: LogUpTs = new LogUpTs( options ); 
+const noPrefix: LogUpTsOptions = { prefix: '' }; // for no prefix
+const timestampPrefix: LogUpTsOptions = { prefix: '{{year}}.{{month}}.{{date}}:{{hours}}.{{minutes}}.{{seconds}}' }; // 2018.01.01:13.25.23
 ```
-
-## Placeholders
-LogUpTs has a small string replacement library, which enables you to use placeholders like {{service}} in the example above.
-So you can use a few placeholders to modify your logmessage or, if a placeholder is missing you can create your own.
+see here the LogUpTsOptions type:
 ```typescript
-let conf: LogUpTsOptions = {
-    quiet: true,
-    prefix: '',
-    placeholders: [
-        {
-            keys: ['<a>', '</a>'],
-            replacer: ( abs?: string, passArg?: any ) => {
-                return '<link>' + abs;
-            },
-            flags: 'g',
-        },
-        {
-            keys: ['<maintainer />'],
-            flags: 'g',
-            replacer: () => {
-                return 'milleniumfrog';
-            }
-        }
-    ],
-};
-let logger: LogUpTs = new LogUpTs( conf, {} );
-let str: string = await logger.log( '<a>hello <maintainer /></a>' );
-expect( str ).to.eql( '<link>hello milleniumfrog' );
-```
-the following placeholders already exist:
-
-- {{date}}
-- {{day}}
-- {{month}}
-- {{year}}
-- {{hours}}
-- {{minutes}}
-- {{seconds}}
-- {{service}} (returns the value of passArguments.service, normally something like [LOG], [ERROR], [WARN])
-
-## Transports - File Transport
-
-
-A transport is an object that matches to the following interface:
-```typescript
-interface Transport {
-    exec: ( transportOptions: any, str: string ) => Promise<void>;
+export interface LogUpTsOptions<T = LogUpTsTemplateTypeInterface> {
+    /** set the prefix */
+    prefix?: string;
+    /** postfix */
+    postfix?: string;
+    /** all Placeholders */
+    placeholders?: Placeholder[];
+    /** supress console output */
+    quiet?: boolean;
+    /** write to File or other destinations */
+    transports?: Transport[];
+    /** execute custom functions when calling the function */
+    customFunctions?: (( param: string, internals: T, options: LogUpTsOptions<T> ) => Promise<void>)[];
+    /** log, warn, error, ... */
+    logType?: string;
+    /** log error.stack to console */
+    logStack?: boolean;
 }
 ```
-The transportOptions are the internals of the logupts-instance.
+To Configure Logupts you create an object that matches this interface and pass it when you create a LogUpTs-instance.
 
-LogUpTs gets shipped with a file-transport (for linux and mac, windows support will follow)
-### Usage
+## Write to files:
 ```typescript
+import { LogUpTs, LogUpTsOptions } from 'logupts';
+import { FileTransport, FileInternals } from 'logupts/dist/es2015/file-transport';
 let options: LogUpTsOptions = {
     transports: [ new FileTransport( 'test1.log', '../log', [ 'ALL' ] ) ],
     quiet: true,
@@ -118,37 +112,110 @@ let internals: any & FileInternals = {
 let logger: LogUpTs = new LogUpTs( options, internals );
 logger.log( 'begin file' );
 for ( let i = 0; i < 100; i++ ) {
-    logger.log( i+2 + 'Zeile' );
+    await logger.log( i+2 + 'Zeile' );		// u need the await or it can happen that the order is not correct.
 }
 logger.log( 'end file' );
 ```
-
-## Extend LogUpTs
-add new functions:
+The example above shows how to use transports and in particular how to use the file transport plugin.
+A Transport is an object that matches this interface:
 ```typescript
-let logger: LogUpTs | (LogUpTs & { info: ( str: string ) => Promise<string> })= new LogUpTs(  );
-let info: ( str: string ) => Promise<string> = async ( str: string) => {
-    logger.options.logType = "INFO";
-    logger.internals.service = "INFO";
-    return logger.custom( logger.options, logger.internals, str );
+export interface Transport< T = LogUpTsTemplateTypeInterface > {
+    exec: ( transportOptions: T, str: string ) => Promise<void>;
 }
-info( "hello" ) ) // "[INFO] hello"
 ```
-add the new function to a logupts class
+If you want to create your own transport plugins you can study file-transport.ts in the source folder.
+
+## Extending LogUpTs
+As we mentioned earlier logupts is easy to extend. You can create functions that redirect to loguptsfunctions.
+for example (snipped from my tests)
 ```typescript
-class eLogUpTs extends LogUpTs {
-    constructor() {
-        super( {quiet: true} );
-    }
-    info( msg: string ) {
-        this.options.logType = 'LOG';
-        this.internals.service = 'INFO'
-        return super.custom(this.options, this.internals, "hello");
-    }
+it( 'create custom function with logger.custom', async () => {
+	const logger = new LogUpTs( { quiet: true } );
+	const log = ( msg: string ) => logger.log( msg );
+	const error = (msg: string ) => logger.error( msg );
+	const page = ( msg: string ) => logger.custom( {},  {service: 'PAGE' }, msg );
+	expect( await log( 'first' ) ).to.eql( '[LOG] first' );
+	expect( await error( 'second' ) ).to.eql( '[ERROR] second' );
+	expect( await page( 'third' ) ).to.eql( '[PAGE] third' );
+} );
+```
+As you can see we create the new function "page. page invokes the function logger.custom, which you
+pass an object of type loguptsoption and an object that contains variables for placeholders/transports 
+(here we passed {service: 'PAGE' } for our {{service}} Placeholder) and the text we want to print. 
+The functions log, error and warn also base on custom as you can see in the code below.
+```typescript
+// implementation from error
+public async error( error: string | Error, customOptions?: LogUpTsOptions<T> ): Promise<string> {
+    let opt = this.mergeOptions( customOptions || {} );
+    // set logtype to error -> console.error(str)
+    opt.logType = 'error';
+    let str = error instanceof Error ? `${error.message}${ (opt.logStack && error.stack !== undefined) ? '\n' + error.stack : ''}` : error;
+    return  this.custom( opt, { service: 'ERROR' }, str );
 }
-let logger= new eLogUpTs();
-logger.info( "hello" ) // "[INFO] hello"
 ```
 
-### LICENSE MIT
-### MAINTAINER: milleniumfrog
+Because LogUpTs is a class you can extend LogUpTs via extending the class
+```typescript
+it( 'extend the class', async () => {
+	class eLogUpTs extends LogUpTs {
+		public functionCounter: number;
+		constructor() {
+			super( { quiet: true } );
+			this.functionCounter = 0;
+		}
+		async page( msg: string ) {
+			++this.functionCounter;
+			return this.custom( this.options, Object.assign( this.internals, { service: 'PAGE' } ), msg );
+		}
+		async log( msg: string ) {
+			++this.functionCounter;
+			return super.log( msg );
+		}
+	}
+	const logger = new eLogUpTs();
+	await logger.log( 'first' );
+	expect( await logger.page( 'second' ) ).to.eql( '[PAGE] second' );
+	await logger.warn( 'third' );											// doesnt increase functioncounter
+	expect( logger.functionCounter ).to.eql( 2 ); 
+} );
+```
+
+## Placeholders
+Above we talked a few times about placeholders, that are patterns in strings that get replaced.
+You can use the default Placeholders we included in this package:
+
+- year
+- month
+- date
+- day
+- hours
+- minutes
+- seconds
+- service
+
+or create your own
+```typescript
+export interface Placeholder {
+    keys: Array<string>;
+    replacer: ((str?: string, passArguments?: any) => string);
+    flags: string;
+    called?: boolean;
+}
+```
+like this:
+```typescript
+const placeholder: Placeholder = {
+    keys: ['{{year}}'],
+    replacer: () => {
+        return `${(new Date()).getFullYear()}`;
+    },
+    flags: 'g'
+};
+```
+
+## Any problem
+report your [Issues here](https://github.com/milleniumfrog/logupts/issues)
+## Any question
+write me an email: [rene.schwarzinger@milleniumfrog.de](mailto:rene.schwarzinger@milleniumfrog.de)
+## Any idea
+write me an email: [rene.schwarzinger@milleniumfrog.de](mailto:rene.schwarzinger@milleniumfrog.de)
