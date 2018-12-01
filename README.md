@@ -216,6 +216,6 @@ const placeholder: Placeholder = {
 ## Any problem
 report your [Issues here](https://github.com/milleniumfrog/logupts/issues)
 ## Any question
-write me an email: [rene.schwarzinger@milleniumfrog.de](mailto:rene.schwarzinger@milleniumfrog.de)
+write me an email: [web@milleniumfrog.de](mailto:web@milleniumfrog.de)
 ## Any idea
-write me an email: [rene.schwarzinger@milleniumfrog.de](mailto:rene.schwarzinger@milleniumfrog.de)
+write me an email: [web@milleniumfrog.de](mailto:web@milleniumfrog.de)
