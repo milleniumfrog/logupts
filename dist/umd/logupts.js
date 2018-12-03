@@ -88,6 +88,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 return this.custom(opt, { service: 'WARN' }, message);
             });
         }
+        trace(message, customOptions) {
+            return __awaiter(this, void 0, void 0, function* () {
+                let opt = this.mergeOptions(customOptions || {});
+                opt.logType = 'trace';
+                return this.custom(opt, { service: 'TRACE' }, message);
+            });
+        }
+        debug(message, customOptions) {
+            return __awaiter(this, void 0, void 0, function* () {
+                let opt = this.mergeOptions(customOptions || {});
+                opt.logType = 'debug';
+                return this.custom(opt, { service: 'DEBUG' }, message);
+            });
+        }
     }
     exports.LogUpTs = LogUpTs;
     exports.default = LogUpTs;

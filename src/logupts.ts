@@ -39,8 +39,8 @@ export interface LogUpTsOptions<T = LogUpTsTemplateTypeInterface> {
     transports?: Transport[];
     /** execute custom functions when calling the function */
     customFunctions?: (( param: string, internals: T, options: LogUpTsOptions<T> ) => Promise<void>)[];
-    /** log, warn, error */
-    logType?: string;
+    /** log, warn, error, trace */
+    logType?: "log"|"warn"|"error"|"trace"|"debug";
     /** log error.stack to console */
     logStack?: boolean;
 }
@@ -144,7 +144,21 @@ export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string 
         // set logtype to warn -> console.warn(str)
         opt.logType = 'warn';
         return this.custom( opt, { service: 'WARN' }, message );
-    }
+	}
+	
+	public async trace( message: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
+        let opt = this.mergeOptions( customOptions || {} );
+        // set logtype to warn -> console.trace(str)
+        opt.logType = 'trace';
+        return this.custom( opt, { service: 'TRACE' }, message );
+	}
+
+	public async debug( message: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
+        let opt = this.mergeOptions( customOptions || {} );
+        // set logtype to warn -> console.debug(str)
+        opt.logType = 'debug';
+        return this.custom( opt, { service: 'DEBUG' }, message );
+	}
 
 }
 

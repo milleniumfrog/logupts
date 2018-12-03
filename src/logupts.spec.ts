@@ -11,6 +11,7 @@ describe( 'class LogUpTs:', () => {
 		expect( (await logger.error( new Error( 'third' ) )).substr( 0, 13 ) ).to.eql( '[ERROR] third' );
 		expect( await logger.custom( logger.options, logger.internals, 'fourth' ) ).to.eql( '[ERROR] fourth' );
 		expect( await logger.warn( 'fifth' ) ).to.eql( '[WARN] fifth' );
+		expect( await logger.trace( 'sixth' ) ).to.eql( '[TRACE] sixth' );
 		expect( logger.options.placeholders ).to.eql( DefaultPlaceholders );
 		expect( JSON.stringify( logger.mergeOptions( logger.options ) ) ).to.eql( JSON.stringify( Object.assign( {}, defaultOptions, { quiet: true } ) ) );
 	} );

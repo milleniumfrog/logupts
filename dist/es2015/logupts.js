@@ -75,6 +75,20 @@ export class LogUpTs {
             return this.custom(opt, { service: 'WARN' }, message);
         });
     }
+    trace(message, customOptions) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let opt = this.mergeOptions(customOptions || {});
+            opt.logType = 'trace';
+            return this.custom(opt, { service: 'TRACE' }, message);
+        });
+    }
+    debug(message, customOptions) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let opt = this.mergeOptions(customOptions || {});
+            opt.logType = 'debug';
+            return this.custom(opt, { service: 'DEBUG' }, message);
+        });
+    }
 }
 export default LogUpTs;
 //# sourceMappingURL=logupts.js.map

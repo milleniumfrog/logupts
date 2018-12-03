@@ -14,7 +14,7 @@ export interface LogUpTsOptions<T = LogUpTsTemplateTypeInterface> {
     quiet?: boolean;
     transports?: Transport[];
     customFunctions?: ((param: string, internals: T, options: LogUpTsOptions<T>) => Promise<void>)[];
-    logType?: string;
+    logType?: "log" | "warn" | "error" | "trace" | "debug";
     logStack?: boolean;
 }
 export declare const defaultOptions: LogUpTsOptions<any>;
@@ -29,5 +29,7 @@ export declare class LogUpTs<T extends LogUpTsTemplateTypeInterface = {
     log(str: string, customOptions?: LogUpTsOptions<T>): Promise<string>;
     error(error: string | Error, customOptions?: LogUpTsOptions<T>): Promise<string>;
     warn(message: string, customOptions?: LogUpTsOptions<T>): Promise<string>;
+    trace(message: string, customOptions?: LogUpTsOptions<T>): Promise<string>;
+    debug(message: string, customOptions?: LogUpTsOptions<T>): Promise<string>;
 }
 export default LogUpTs;
