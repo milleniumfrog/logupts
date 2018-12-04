@@ -126,6 +126,14 @@
             step((generator = generator.apply(thisArg, _arguments || [])).next());
         });
     };
+    (function (LOGLEVEL) {
+        LOGLEVEL[LOGLEVEL["TRACE"] = 0] = "TRACE";
+        LOGLEVEL[LOGLEVEL["DEBUG"] = 1] = "DEBUG";
+        LOGLEVEL[LOGLEVEL["INFO"] = 2] = "INFO";
+        LOGLEVEL[LOGLEVEL["WARN"] = 3] = "WARN";
+        LOGLEVEL[LOGLEVEL["ERROR"] = 4] = "ERROR";
+        LOGLEVEL[LOGLEVEL["OFF"] = 5] = "OFF";
+    })(exports.LOGLEVEL || (exports.LOGLEVEL = {}));
     const defaultOptions = {
         prefix: '{{service}} ',
         postfix: '',
@@ -135,6 +143,7 @@
         customFunctions: [],
         logType: 'log',
         logStack: true,
+        logLevel: exports.LOGLEVEL.INFO
     };
     class LogUpTs {
         constructor(customOptions, setInternals) {
@@ -148,9 +157,11 @@
         }
         mergeOptions(customOptions, fillOptions) {
             fillOptions = fillOptions || this.options;
+            if (customOptions.quiet)
+                customOptions.logLevel = exports.LOGLEVEL.OFF;
             return Object.assign({}, fillOptions, customOptions);
         }
-        custom(customOptions, setInternals, message) {
+        custom(customOptions, setInternals, message, logLevel = exports.LOGLEVEL.INFO) {
             return __awaiter(this, void 0, void 0, function* () {
                 let opt = this.mergeOptions(customOptions);
                 for (let key in setInternals) {
@@ -158,7 +169,7 @@
                 }
                 let str = `${opt.prefix}${message}${opt.postfix}`;
                 str = replaceComplex((this.options.placeholders || []), str, this.internals);
-                if (!opt.quiet && (console[opt.logType || 'log'] !== undefined)) {
+                if ((opt.logLevel || 0) <= logLevel && (console[opt.logType || 'log'] !== undefined)) {
                     console[opt.logType || 'log'](str);
                 }
                 let asyncThings = [];
@@ -175,7 +186,7 @@
         ;
         log(str, customOptions) {
             return __awaiter(this, void 0, void 0, function* () {
-                return this.custom(customOptions || {}, { service: 'LOG' }, str);
+                return this.custom(customOptions || {}, { service: 'LOG' }, str, exports.LOGLEVEL.INFO);
             });
         }
         error(error, customOptions) {
@@ -183,28 +194,33 @@
                 let opt = this.mergeOptions(customOptions || {});
                 opt.logType = 'error';
                 let str = error instanceof Error ? `${error.message}${(opt.logStack && error.stack !== undefined) ? '\n' + error.stack : ''}` : error;
-                return this.custom(opt, { service: 'ERROR' }, str);
+                return this.custom(opt, { service: 'ERROR' }, str, exports.LOGLEVEL.ERROR);
             });
         }
         warn(message, customOptions) {
             return __awaiter(this, void 0, void 0, function* () {
                 let opt = this.mergeOptions(customOptions || {});
                 opt.logType = 'warn';
-                return this.custom(opt, { service: 'WARN' }, message);
+                return this.custom(opt, { service: 'WARN' }, message, exports.LOGLEVEL.WARN);
             });
         }
         trace(message, customOptions) {
             return __awaiter(this, void 0, void 0, function* () {
                 let opt = this.mergeOptions(customOptions || {});
                 opt.logType = 'trace';
-                return this.custom(opt, { service: 'TRACE' }, message);
+                return this.custom(opt, { service: 'TRACE' }, message, exports.LOGLEVEL.TRACE);
             });
         }
         debug(message, customOptions) {
             return __awaiter(this, void 0, void 0, function* () {
                 let opt = this.mergeOptions(customOptions || {});
                 opt.logType = 'debug';
-                return this.custom(opt, { service: 'DEBUG' }, message);
+                return this.custom(opt, { service: 'DEBUG' }, message, exports.LOGLEVEL.DEBUG);
+            });
+        }
+        info(str, customOptions) {
+            return __awaiter(this, void 0, void 0, function* () {
+                return this.custom(customOptions || {}, { service: 'INFO' }, str, exports.LOGLEVEL.INFO);
             });
         }
     }

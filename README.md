@@ -94,8 +94,18 @@ export interface LogUpTsOptions<T = LogUpTsTemplateTypeInterface> {
     /** log, warn, error, ... */
     logType?: string;
     /** log error.stack to console */
-    logStack?: boolean;
+	logStack?: boolean;
+	/** set loglevel  */
+	logLevel?: LOGLEVEL;
 }
+ export enum LOGLEVEL {
+	TRACE, 
+	DEBUG,
+	INFO,
+	WARN,
+	ERROR,
+	OFF
+ }
 ```
 To Configure Logupts you create an object that matches this interface and pass it when you create a LogUpTs-instance.
 
@@ -150,7 +160,7 @@ public async error( error: string | Error, customOptions?: LogUpTsOptions<T> ):
     // set logtype to error -> console.error(str)
     opt.logType = 'error';
     let str = error instanceof Error ? `${error.message}${ (opt.logStack && error.stack !== undefined) ? '\n' + error.stack : ''}` : error;
-    return  this.custom( opt, { service: 'ERROR' }, str );
+    return  this.custom( opt, { service: 'ERROR' }, str, LOGLEVEL.ERROR );
 }
 ```
 
@@ -165,7 +175,7 @@ it( 'extend the class', async () => {
 		}
 		async page( msg: string ) {
 			++this.functionCounter;
-			return this.custom( this.options, Object.assign( this.internals, { service: 'PAGE' } ), msg );
+			return this.custom( this.options, Object.assign( this.internals, { service: 'PAGE' } ), msg, LOGLEVEL.INFO );
 		}
 		async log( msg: string ) {
 			++this.functionCounter;
@@ -212,6 +222,8 @@ const placeholder: Placeholder = {
     flags: 'g'
 };
 ```
+
+
 
 ## Any problem
 report your [Issues here](https://github.com/milleniumfrog/logupts/issues)

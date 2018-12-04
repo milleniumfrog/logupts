@@ -12,6 +12,7 @@
     "build": "sh ./shellscripts/build.sh",
     "externals": "sh ./shellscripts/externals.sh"
   },
+  "keywords": ["logging", "loglevels", "nodejs", "browser", "typescript"],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/milleniumfrog/logupts.git"

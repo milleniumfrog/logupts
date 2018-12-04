@@ -8,6 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { DefaultPlaceholders, replacePlaceholder } from './placeholder';
 export { DefaultPlaceholders, replacePlaceholder } from './placeholder';
+export var LOGLEVEL;
+(function (LOGLEVEL) {
+    LOGLEVEL[LOGLEVEL["TRACE"] = 0] = "TRACE";
+    LOGLEVEL[LOGLEVEL["DEBUG"] = 1] = "DEBUG";
+    LOGLEVEL[LOGLEVEL["INFO"] = 2] = "INFO";
+    LOGLEVEL[LOGLEVEL["WARN"] = 3] = "WARN";
+    LOGLEVEL[LOGLEVEL["ERROR"] = 4] = "ERROR";
+    LOGLEVEL[LOGLEVEL["OFF"] = 5] = "OFF";
+})(LOGLEVEL || (LOGLEVEL = {}));
 export const defaultOptions = {
     prefix: '{{service}} ',
     postfix: '',
@@ -17,6 +26,7 @@ export const defaultOptions = {
     customFunctions: [],
     logType: 'log',
     logStack: true,
+    logLevel: LOGLEVEL.INFO
 };
 export class LogUpTs {
     constructor(customOptions, setInternals) {
@@ -30,9 +40,11 @@ export class LogUpTs {
     }
     mergeOptions(customOptions, fillOptions) {
         fillOptions = fillOptions || this.options;
+        if (customOptions.quiet)
+            customOptions.logLevel = LOGLEVEL.OFF;
         return Object.assign({}, fillOptions, customOptions);
     }
-    custom(customOptions, setInternals, message) {
+    custom(customOptions, setInternals, message, logLevel = LOGLEVEL.INFO) {
         return __awaiter(this, void 0, void 0, function* () {
             let opt = this.mergeOptions(customOptions);
             for (let key in setInternals) {
@@ -40,7 +52,7 @@ export class LogUpTs {
             }
             let str = `${opt.prefix}${message}${opt.postfix}`;
             str = replacePlaceholder((this.options.placeholders || []), str, this.internals);
-            if (!opt.quiet && (console[opt.logType || 'log'] !== undefined)) {
+            if ((opt.logLevel || 0) <= logLevel && (console[opt.logType || 'log'] !== undefined)) {
                 console[opt.logType || 'log'](str);
             }
             let asyncThings = [];
@@ -57,7 +69,7 @@ export class LogUpTs {
     ;
     log(str, customOptions) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.custom(customOptions || {}, { service: 'LOG' }, str);
+            return this.custom(customOptions || {}, { service: 'LOG' }, str, LOGLEVEL.INFO);
         });
     }
     error(error, customOptions) {
@@ -65,28 +77,33 @@ export class LogUpTs {
             let opt = this.mergeOptions(customOptions || {});
             opt.logType = 'error';
             let str = error instanceof Error ? `${error.message}${(opt.logStack && error.stack !== undefined) ? '\n' + error.stack : ''}` : error;
-            return this.custom(opt, { service: 'ERROR' }, str);
+            return this.custom(opt, { service: 'ERROR' }, str, LOGLEVEL.ERROR);
         });
     }
     warn(message, customOptions) {
         return __awaiter(this, void 0, void 0, function* () {
             let opt = this.mergeOptions(customOptions || {});
             opt.logType = 'warn';
-            return this.custom(opt, { service: 'WARN' }, message);
+            return this.custom(opt, { service: 'WARN' }, message, LOGLEVEL.WARN);
         });
     }
     trace(message, customOptions) {
         return __awaiter(this, void 0, void 0, function* () {
             let opt = this.mergeOptions(customOptions || {});
             opt.logType = 'trace';
-            return this.custom(opt, { service: 'TRACE' }, message);
+            return this.custom(opt, { service: 'TRACE' }, message, LOGLEVEL.TRACE);
         });
     }
     debug(message, customOptions) {
         return __awaiter(this, void 0, void 0, function* () {
             let opt = this.mergeOptions(customOptions || {});
             opt.logType = 'debug';
-            return this.custom(opt, { service: 'DEBUG' }, message);
+            return this.custom(opt, { service: 'DEBUG' }, message, LOGLEVEL.DEBUG);
+        });
+    }
+    info(str, customOptions) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.custom(customOptions || {}, { service: 'INFO' }, str, LOGLEVEL.INFO);
         });
     }
 }

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { LogUpTs, defaultOptions, LogUpTsOptions, LogUpTsTemplateTypeInterface, Transport } from './logupts';
+import { LogUpTs, defaultOptions, LogUpTsOptions, LogUpTsTemplateTypeInterface, Transport, LOGLEVEL } from './logupts';
 import { DefaultPlaceholders } from './placeholder';
 
 describe( 'class LogUpTs:', () => {
@@ -13,7 +13,7 @@ describe( 'class LogUpTs:', () => {
 		expect( await logger.warn( 'fifth' ) ).to.eql( '[WARN] fifth' );
 		expect( await logger.trace( 'sixth' ) ).to.eql( '[TRACE] sixth' );
 		expect( logger.options.placeholders ).to.eql( DefaultPlaceholders );
-		expect( JSON.stringify( logger.mergeOptions( logger.options ) ) ).to.eql( JSON.stringify( Object.assign( {}, defaultOptions, { quiet: true } ) ) );
+		expect( JSON.stringify( logger.mergeOptions( logger.options ) ) ).to.eql( JSON.stringify( Object.assign( {}, defaultOptions, { quiet: true, logLevel: 5 } ) ) );
 	} );
 
 
@@ -103,4 +103,57 @@ describe( 'class LogUpTs:', () => {
 		
 	} );
 
+	describe( 'test loglevels', () => {
+		it( 'ERRORS - list 2 visibles', async () => {
+			const logger = new LogUpTs( { logLevel: LOGLEVEL.ERROR } );
+			await logger.log( "not visible" );
+			await logger.info( "not visible" );
+			await logger.trace( "not visible" );
+			await logger.warn( "not visible" );
+			await logger.debug( "not visible" );
+			await logger.error( "visible" );
+			await logger.error( new Error("visible") );
+		} );
+		it( 'WARNINGS - list 3 visibles', async () => {
+			const logger = new LogUpTs( { logLevel: LOGLEVEL.WARN } );
+			await logger.log( "not visible" );
+			await logger.info( "not visible" );
+			await logger.trace( "not visible" );
+			await logger.warn( "visible" );
+			await logger.debug( "not visible" );
+			await logger.error( "visible" );
+			await logger.error( new Error("visible") );
+		} );
+		it( 'INFOS - list 5 visibles', async () => {
+			const logger = new LogUpTs( { logLevel: LOGLEVEL.INFO } );
+			await logger.log( "visible" );
+			await logger.trace( "not visible" );
+			await logger.info( "visible" );
+			await logger.warn( "visible" );
+			await logger.debug( "not visible" );
+			await logger.error( "visible" );
+			await logger.error( new Error("visible") );
+		} );
+		it( 'DEBUG - list 6 visibles', async () => {
+			const logger = new LogUpTs( { logLevel: LOGLEVEL.DEBUG } );
+			await logger.log( "visible" );
+			await logger.trace( "not visible" );
+			await logger.info( "visible" );
+			await logger.warn( "visible" );
+			await logger.debug( "visible" );
+			await logger.error( "visible" );
+			await logger.error( new Error("visible") );
+		} );
+		it( 'TRACE - list 6 visibles', async () => {
+			const logger = new LogUpTs( { logLevel: LOGLEVEL.TRACE } );
+			await logger.log( "visible" );
+			await logger.trace( "visible" );
+			await logger.info( "visible" );
+			await logger.warn( "visible" );
+			await logger.debug( "visible" );
+			await logger.error( "visible" );
+			await logger.error( new Error("visible") );
+		} );
+		
+	} )
 } )

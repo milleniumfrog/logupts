@@ -26,6 +26,15 @@ export interface LogUpTsTemplateTypeInterface {
  * - logtype (log/info/error)
  * - logstack
  */
+
+ export enum LOGLEVEL {
+	TRACE, 
+	DEBUG,
+	INFO,
+	WARN,
+	ERROR,
+	OFF
+ }
 export interface LogUpTsOptions<T = LogUpTsTemplateTypeInterface> {
     /** set the prefix */
     prefix?: string;
@@ -42,7 +51,9 @@ export interface LogUpTsOptions<T = LogUpTsTemplateTypeInterface> {
     /** log, warn, error, trace */
     logType?: "log"|"warn"|"error"|"trace"|"debug";
     /** log error.stack to console */
-    logStack?: boolean;
+	logStack?: boolean;
+	/** set loglevel  */
+	logLevel?: LOGLEVEL;
 }
 
 /**
@@ -57,6 +68,7 @@ export const defaultOptions: LogUpTsOptions<any> = {
     customFunctions: [],
     logType: 'log',
 	logStack: true,
+	logLevel: LOGLEVEL.INFO
 };
 
 export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string } > {
@@ -82,11 +94,13 @@ export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string 
      * @param fillOptions 
      */
     public mergeOptions( customOptions: LogUpTsOptions<T>, fillOptions?: LogUpTsOptions<T> ): LogUpTsOptions<T> {
-        fillOptions = fillOptions || this.options;
+		fillOptions = fillOptions || this.options;
+		if( customOptions.quiet )
+			customOptions.logLevel = LOGLEVEL.OFF;
         return Object.assign( {}, fillOptions, customOptions );
     }
 
-    public async custom( customOptions: LogUpTsOptions<T>, setInternals: any, message: string ): Promise<string> {
+    public async custom( customOptions: LogUpTsOptions<T>, setInternals: any, message: string, logLevel: LOGLEVEL = LOGLEVEL.INFO ): Promise<string> {
         // setoptions
         let opt = this.mergeOptions( customOptions );
         // set new Internalvalues
@@ -96,8 +110,8 @@ export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string 
         // generate string
         let str: string = `${opt.prefix}${message}${opt.postfix}`;
         str = replacePlaceholder( (this.options.placeholders || []), str, this.internals );
-        // check if quiet or logtype exists
-        if ( !opt.quiet && ((<any>console)[ opt.logType || 'log' ] !== undefined) ) {
+		// check if quiet or logtype exists
+        if ( (opt.logLevel || 0) <= logLevel && ((<any>console)[ opt.logType || 'log' ] !== undefined) ) {
             (<any>console)[ opt.logType || 'log' ]( str );
         }
 		let asyncThings: Promise<any>[] = [];
@@ -118,7 +132,7 @@ export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string 
      * @param customOptions 
      */
     public async log( str: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
-        return this.custom( customOptions || {}, { service: 'LOG' }, str );
+        return this.custom( customOptions || {}, { service: 'LOG' }, str, LOGLEVEL.INFO );
     }
 
     /**
@@ -131,7 +145,7 @@ export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string 
         // set logtype to error -> console.error(str)
         opt.logType = 'error';
         let str = error instanceof Error ? `${error.message}${ (opt.logStack && error.stack !== undefined) ? '\n' + error.stack : ''}` : error;
-        return  this.custom( opt, { service: 'ERROR' }, str );
+        return  this.custom( opt, { service: 'ERROR' }, str, LOGLEVEL.ERROR );
     }
 
     /**
@@ -143,22 +157,26 @@ export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string 
         let opt = this.mergeOptions( customOptions || {} );
         // set logtype to warn -> console.warn(str)
         opt.logType = 'warn';
-        return this.custom( opt, { service: 'WARN' }, message );
+        return this.custom( opt, { service: 'WARN' }, message, LOGLEVEL.WARN );
 	}
 	
 	public async trace( message: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
         let opt = this.mergeOptions( customOptions || {} );
         // set logtype to warn -> console.trace(str)
         opt.logType = 'trace';
-        return this.custom( opt, { service: 'TRACE' }, message );
+        return this.custom( opt, { service: 'TRACE' }, message, LOGLEVEL.TRACE );
 	}
 
 	public async debug( message: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
         let opt = this.mergeOptions( customOptions || {} );
         // set logtype to warn -> console.debug(str)
         opt.logType = 'debug';
-        return this.custom( opt, { service: 'DEBUG' }, message );
+        return this.custom( opt, { service: 'DEBUG' }, message, LOGLEVEL.DEBUG );
 	}
+
+	public async info( str: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
+        return this.custom( customOptions || {}, { service: 'INFO' }, str, LOGLEVEL.INFO );
+    }
 
 }
 
