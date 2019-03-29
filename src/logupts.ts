@@ -6,7 +6,7 @@ export { Placeholder, DefaultPlaceholders, replacePlaceholder } from './placehol
  * Transport Logmessage to any destination (for example files)
  */
 export interface Transport< T = LogUpTsTemplateTypeInterface > {
-    exec: ( transportOptions: T, str: string ) => Promise<void>;
+    exec: ( transportOptions: T, modifiedMessage: string, orginalMessage: string ) => Promise<void>;
 }
 
 export interface LogUpTsTemplateTypeInterface {
@@ -117,7 +117,7 @@ export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string 
 		let asyncThings: Promise<any>[] = [];
         // add transports
         for ( let transport of opt.transports || [] ) {
-            asyncThings.push( transport.exec( this.internals, str ) );
+            asyncThings.push( transport.exec( this.internals, str, message ) );
         }
         for ( let asyncExec of opt.customFunctions || [] ) {
             asyncThings.push( asyncExec( str, this.internals, opt ) );
