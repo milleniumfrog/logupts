@@ -1,10 +1,24 @@
-module.exports = {
-    input: 'dist/es2015/logupts.js',
-    output: {
-        file: 'dist/browser/logupts.js',
-        format: 'umd',
-        name: 'logupts',
-        sourcemap: 'true',
-        sourcemapFile: 'dist/browser/logupts.js.map'
+import sourcemaps from 'rollup-plugin-sourcemaps';
+import { terser } from 'rollup-plugin-terser';
+import resolve from 'rollup-plugin-node-resolve';
+
+export default [
+    {
+        input: './dist/logupts.js',
+        output: {
+            file: './dist/logupts.umd.js',
+            format: 'umd',
+            name: 'logupts',
+            sourcemap: true,
+            globals: {
+                strplace: 'strplace'
+            }
+        },
+        plugins: [
+            resolve(),
+            sourcemaps(),
+            terser(),
+        ],
+        context: true,
     }
-}
+]

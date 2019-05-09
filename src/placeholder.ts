@@ -1,6 +1,6 @@
-import { ComplexKey as Placeholder } from './external/strplace';
+import { ComplexKey as Placeholder } from 'strplace';
 
-export { ComplexKey as Placeholder, replaceComplex as replacePlaceholder } from './external/strplace';
+export { ComplexKey as Placeholder, replaceComplex as replacePlaceholder } from 'strplace';
 
 export const DefaultPlaceholders: Placeholder[] = [
     // get day 1-31
@@ -56,7 +56,7 @@ export const DefaultPlaceholders: Placeholder[] = [
     {
         keys: ['{{service}}'],
         replacer: ( none?: string, passArguments?: any) => {
-           return `[${passArguments.service || 'DEFAULT'}]`;
+            return `[${passArguments.service || 'DEFAULT'}]`;
         },
         flags: 'g'
     },

@@ -82,7 +82,7 @@ export class FileTransport implements Transport {
         return new Promise<void>( ( resolve, reject) => {
             let filename: string = replacePlaceholder( this.placeholders, this.filename, internals );
             let filePath: string = `${this.path}/${filename}`;
-            fs.writeFile( filePath, str + '\n', { flag: 'a' }, ( error: NodeJS.ErrnoException ) => {
+            fs.writeFile( filePath, str + '\n', { flag: 'a' }, ( error: NodeJS.ErrnoException | null ) => {
                 if ( error )
                     reject( error );
                 resolve();

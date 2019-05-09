@@ -4,11 +4,7 @@ node_modules
 .DS_Store
 dist/Archiv.zip
 dist/temp/
-doc
-test/node.js
 old**
-dist/dist/
 dist/**/*.spec.*
-dist/test
 coverage
-out
+.nyc_output

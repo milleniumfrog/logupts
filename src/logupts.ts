@@ -14,6 +14,15 @@ export interface LogUpTsTemplateTypeInterface {
 	service: string;
 }
 
+
+export enum LOGLEVEL {
+	TRACE, 
+	DEBUG,
+	INFO,
+	WARN,
+	ERROR,
+	OFF
+}
 /**
  * configure LogUpTs
  * configure
@@ -26,15 +35,6 @@ export interface LogUpTsTemplateTypeInterface {
  * - logtype (log/info/error)
  * - logstack
  */
-
- export enum LOGLEVEL {
-	TRACE, 
-	DEBUG,
-	INFO,
-	WARN,
-	ERROR,
-	OFF
- }
 export interface LogUpTsOptions<T = LogUpTsTemplateTypeInterface> {
     /** set the prefix */
     prefix?: string;
@@ -179,5 +179,3 @@ export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string 
     }
 
 }
-
-export default LogUpTs;
