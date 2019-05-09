@@ -1,0 +1,17 @@
+log/
+node_modules/
+.vscode
+.DS_Store
+dist/Archiv.zip
+dist/temp/
+old**
+dist/**/*.spec.*
+coverage
+.nyc_output
+src/
+.gitignore
+rollup.config.js
+tsconfig.json
+.github
+mocha.opts
+.nycrc
