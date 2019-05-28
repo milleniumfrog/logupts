@@ -4,17 +4,18 @@
   "description": "LogUpTs is designed as an extendable logging library for nodejs and the browser in typescript, but it is also usable in javascript. With LogUpTs you are able to use placeholders (\"{{day}}:{{month}}:{{year}}\" -> \"01.01.1970\" ) and transports (for example the file transport).",
   "main": "./dist/logupts.umd.js",
   "browser": "./dist/logupts.umd.js",
-  "module": "./dist/logupts",
+  "module": "./dist/logupts.js",
   "types": "./dist/logupts.d.ts",
   "scripts": {
     "build": "tsc && rollup -c",
     "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' mocha --opts ./mocha.opts",
-    "coverage": "tsc && nyc npm test"
+    "coverage": "nyc npm test"
   },
   "keywords": [
     "logging",
     "loglevels",
     "nodejs",
+
     "browser",
     "typescript"
   ],
