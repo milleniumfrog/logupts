@@ -4,6 +4,7 @@ import { ILogUpTsConfig } from './loguptsconfig';
 import { IFormatter } from './formatter';
 import { ITransportArgs } from './transport';
 
+export * from './loguptssync';
 
 export type CustomArgs = {
 

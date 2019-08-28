@@ -4,6 +4,11 @@ import { ILogUpTsConfig, defaultConfig } from './loguptsconfig';
 import { ITransportArgs } from './transport';
 import { IFormatter } from './formatter';
 
+export { LOGLEVEL } from './loglevel';
+export { ITransportArgs, ITransport } from './transport';
+export { IFormatter, IFormatArgs } from './formatter';
+export { ILogUpTsConfig, defaultConfig } from './loguptsconfig';
+
 export class LogUpTsSync {
 
     static defaultConfig: ILogUpTsConfig
