@@ -1,6 +1,6 @@
 {
   "name": "logupts",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "LogUpTs is designed as an extendable logging library for nodejs and the browser in typescript, but it is also usable in javascript. With LogUpTs you are able to use placeholders (\"{{day}}:{{month}}:{{year}}\" -> \"01.01.1970\" ) and transports (for example the file transport).",
   "main": "./dist/logupts.umd.js",
   "browser": "./dist/logupts.umd.js",
