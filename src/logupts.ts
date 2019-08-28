@@ -1,181 +1,156 @@
-import { Placeholder, DefaultPlaceholders, replacePlaceholder } from './placeholder';
+import { LOGLEVEL } from './loglevel';
+import { ConsoleTransport } from './consoletransport';
+import { LogUpTsSync } from './loguptssync';
 
-export { Placeholder, DefaultPlaceholders, replacePlaceholder } from './placeholder';
 
-/**
- * Transport Logmessage to any destination (for example files)
- */
-export interface Transport< T = LogUpTsTemplateTypeInterface > {
-    exec: ( transportOptions: T, modifiedMessage: string, orginalMessage: string ) => Promise<void>;
-}
-
-export interface LogUpTsTemplateTypeInterface {
-	[ index: string ]: any,
-	service: string;
+export interface ITransport {
+    transportSync?: (args: ITransportArgs) => void;
+    transport?: (args: ITransportArgs) => Promise<void>;
 }
 
 
-export enum LOGLEVEL {
-	TRACE, 
-	DEBUG,
-	INFO,
-	WARN,
-	ERROR,
-	OFF
-}
-/**
- * configure LogUpTs
- * configure
- * - prefix
- * - postfix
- * - placeholders
- * - quiet (log it to console)
- * - transports
- * - customfunction (run functions when log gets executed)
- * - logtype (log/info/error)
- * - logstack
- */
-export interface LogUpTsOptions<T = LogUpTsTemplateTypeInterface> {
-    /** set the prefix */
-    prefix?: string;
-    /** postfix */
-    postfix?: string;
-    /** all Placeholders */
-    placeholders?: Placeholder[];
-    /** supress console output */
-    quiet?: boolean;
-    /** write to File or other destinations */
-    transports?: Transport[];
-    /** execute custom functions when calling the function */
-    customFunctions?: (( param: string, internals: T, options: LogUpTsOptions<T> ) => Promise<void>)[];
-    /** log, warn, error, trace */
-    logType?: "log"|"warn"|"error"|"trace"|"debug";
-    /** log error.stack to console */
-	logStack?: boolean;
-	/** set loglevel  */
-	logLevel?: LOGLEVEL;
+export interface ITransportArgs {
+    message: string;
+    formattedMessage: string;
+    instanceLogLevel: LOGLEVEL;
+    usedLogLevel: LOGLEVEL;
+    parentFunctionName: string;
+    loguptsConfig: ILogUpTsConfig;
+    error?: Error;
+    customArgs: unknown;
 }
 
-/**
- * default LogUpTsoptions
- */
-export const defaultOptions: LogUpTsOptions<any> = {
-    prefix: '{{service}} ',
+export interface IFormatArgs {
+    message: string;
+    error?: Error;
+    prefix: string;
+    postfix: string;
+    customArgs: unknown;
+    logLevel: LOGLEVEL;
+    parentFunctionName: string;
+}
+
+export interface IFormatter {
+    format(args: IFormatArgs): string;
+}
+
+export interface ILogUpTsConfig {
+    logLevel: LOGLEVEL;
+    prefix: string;
+    postfix: string;
+    transports: ITransport[];
+    formatter: IFormatter
+}
+
+export const defaultConfig: ILogUpTsConfig = {
+    logLevel: LOGLEVEL.WARN,
+    prefix: '{{loglevel}}',
     postfix: '',
-    placeholders: DefaultPlaceholders,
-    quiet: false,
-    transports: [],
-    customFunctions: [],
-    logType: 'log',
-	logStack: true,
-	logLevel: LOGLEVEL.INFO
+    transports: [new ConsoleTransport()],
+    formatter: { format: value => value.message }
 };
 
-export class LogUpTs<T extends LogUpTsTemplateTypeInterface = { service: string } > {
-    public internals: T;
-    public options: LogUpTsOptions<T>;
+export type CustomArgs = {
 
-    constructor( customOptions?: LogUpTsOptions<T>, setInternals?: T ) {
-        setInternals = setInternals || <T>{};
-        customOptions = customOptions || {};
-        // set loguptsoptions
-        this.options =  this.mergeOptions( customOptions, defaultOptions );
-        // set defaultinternals
-        this.internals = <T>{
-			service: 'log',
-		}
-		// merge setinternals with this.interals
-		Object.assign( this.internals, setInternals );
+    message?: string;
+    customArgs?: unknown;
+    logLevel?: LOGLEVEL;
+    customConfig?: Partial<ILogUpTsConfig>;
+    customFormatter?: IFormatter;
+    error?: Error,
+    parentFunctionName?: string
+};
+
+export class LogUpTs {
+
+    public syncInstance: LogUpTsSync
+    constructor(
+        config?: Partial<ILogUpTsConfig>
+    ) {
+        this.syncInstance = new LogUpTsSync(config);
     }
-    
-    /**
-     * merge LogUpTs options to one option object
-     * @param customOptions 
-     * @param fillOptions 
-     */
-    public mergeOptions( customOptions: LogUpTsOptions<T>, fillOptions?: LogUpTsOptions<T> ): LogUpTsOptions<T> {
-		fillOptions = fillOptions || this.options;
-		if( customOptions.quiet )
-			customOptions.logLevel = LOGLEVEL.OFF;
-        return Object.assign( {}, fillOptions, customOptions );
+    async custom( 
+        {
+            message = '',
+            customArgs,
+            logLevel = LOGLEVEL.INFO,
+            customConfig = {},
+            customFormatter = this.syncInstance.config.formatter,
+            error,
+            parentFunctionName = 'log'
+        }: CustomArgs = {}
+    ): Promise<ITransportArgs> {
+        const transportArgs = this.syncInstance.customSync({message, customArgs, logLevel, customConfig, customFormatter, error, parentFunctionName});
+        const promiseArr: Promise<unknown>[] = [];
+        for (const transport of this.syncInstance._ques.async) {
+            promiseArr.push(transport.transport(transportArgs))
+        }
+        await Promise.all(promiseArr);
+        return transportArgs;
     }
 
-    public async custom( customOptions: LogUpTsOptions<T>, setInternals: any, message: string, logLevel: LOGLEVEL = LOGLEVEL.INFO ): Promise<string> {
-        // setoptions
-        let opt = this.mergeOptions( customOptions );
-        // set new Internalvalues
-        for ( let key in setInternals ) {
-            this.internals[key] = setInternals[key];
-        }
-        // generate string
-        let str: string = `${opt.prefix}${message}${opt.postfix}`;
-        str = replacePlaceholder( (this.options.placeholders || []), str, this.internals );
-		// check if quiet or logtype exists
-        if ( (opt.logLevel || 0) <= logLevel && ((<any>console)[ opt.logType || 'log' ] !== undefined) ) {
-            (<any>console)[ opt.logType || 'log' ]( str );
-        }
-		let asyncThings: Promise<any>[] = [];
-        // add transports
-        for ( let transport of opt.transports || [] ) {
-            asyncThings.push( transport.exec( this.internals, str, message ) );
-        }
-        for ( let asyncExec of opt.customFunctions || [] ) {
-            asyncThings.push( asyncExec( str, this.internals, opt ) );
-        }
-        await Promise.all( asyncThings );
-        return str;
+    async _logService(logServiceArgs: {parentFunctionName: string, logLevel: LOGLEVEL},
+        custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string,  
+        ...messages: string[]): Promise<string> 
+    {
+        if (typeof custom === 'string') 
+            messages.unshift(custom);
+        return (await this.custom({
+            message: messages.join(' '),
+            parentFunctionName: logServiceArgs.parentFunctionName,
+            logLevel: logServiceArgs.logLevel,
+            customArgs: typeof custom !== 'string' ? custom.args : undefined,
+            customConfig: typeof custom !== 'string' ? custom.config : undefined,
+            error:  typeof custom !== 'string' ? custom.error : undefined,
+            customFormatter: typeof custom !== 'string' ? custom.formatter : undefined,
+        })).formattedMessage;
     };
 
-    /**
-     * a default log
-     * @param str 
-     * @param customOptions 
-     */
-    public async log( str: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
-        return this.custom( customOptions || {}, { service: 'LOG' }, str, LOGLEVEL.INFO );
+    async log(...messages: string[]): Promise<string>;
+    async log( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): Promise<string> {
+        return this._logService({
+            logLevel: LOGLEVEL.INFO,
+            parentFunctionName: 'log',
+        }, custom, ...messages);
     }
 
-    /**
-     * log errors
-     * @param error 
-     * @param customOptions 
-     */
-    public async error( error: string | Error, customOptions?: LogUpTsOptions<T> ): Promise<string> {
-        let opt = this.mergeOptions( customOptions || {} );
-        // set logtype to error -> console.error(str)
-        opt.logType = 'error';
-        let str = error instanceof Error ? `${error.message}${ (opt.logStack && error.stack !== undefined) ? '\n' + error.stack : ''}` : error;
-        return  this.custom( opt, { service: 'ERROR' }, str, LOGLEVEL.ERROR );
+    async info(...messages: string[]): Promise<string>;
+    async info( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): Promise<string> {
+        return this._logService({
+            logLevel: LOGLEVEL.INFO,
+            parentFunctionName: 'log',
+        }, custom, ...messages);
     }
 
-    /**
-     * warn
-     * @param message 
-     * @param customOptions 
-     */
-    public async warn( message: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
-        let opt = this.mergeOptions( customOptions || {} );
-        // set logtype to warn -> console.warn(str)
-        opt.logType = 'warn';
-        return this.custom( opt, { service: 'WARN' }, message, LOGLEVEL.WARN );
-	}
-	
-	public async trace( message: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
-        let opt = this.mergeOptions( customOptions || {} );
-        // set logtype to warn -> console.trace(str)
-        opt.logType = 'trace';
-        return this.custom( opt, { service: 'TRACE' }, message, LOGLEVEL.TRACE );
-	}
-
-	public async debug( message: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
-        let opt = this.mergeOptions( customOptions || {} );
-        // set logtype to warn -> console.debug(str)
-        opt.logType = 'debug';
-        return this.custom( opt, { service: 'DEBUG' }, message, LOGLEVEL.DEBUG );
-	}
-
-	public async info( str: string, customOptions?: LogUpTsOptions<T> ): Promise<string> {
-        return this.custom( customOptions || {}, { service: 'INFO' }, str, LOGLEVEL.INFO );
+    async debug(...messages: string[]): Promise<string>;
+    async debug( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): Promise<string> {
+        return this._logService({
+            logLevel: LOGLEVEL.DEBUG,
+            parentFunctionName: 'debug',
+        }, custom, ...messages);
     }
 
+    async trace(...messages: string[]): Promise<string>;
+    async trace( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): Promise<string> {
+        return this._logService({
+            logLevel: LOGLEVEL.TRACE,
+            parentFunctionName: 'trace',
+        }, custom, ...messages);
+    }
+
+    async warn(...messages: string[]): Promise<string>;
+    async warn( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): Promise<string> {
+        return this._logService({
+            logLevel: LOGLEVEL.WARN,
+            parentFunctionName: 'warn',
+        }, custom, ...messages);
+    }
+
+    async error(error: Error | string, ...messages: string[]): Promise<string>;
+    async error( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string | Error,...messages: string[]): Promise<string> {
+        return this._logService({
+            logLevel: LOGLEVEL.WARN,
+            parentFunctionName: 'warn',
+        }, custom instanceof Error ? {error:custom} : custom , ...messages);
+    }
 }

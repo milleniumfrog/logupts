@@ -8,3 +8,4 @@ old**
 dist/**/*.spec.*
 coverage
 .nyc_output
+dist

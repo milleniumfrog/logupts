@@ -43,8 +43,5 @@
     "source-map-support": "^0.5.12",
     "ts-node": "^8.1.0",
     "typescript": "^3.4.5"
-  },
-  "dependencies": {
-    "strplace": "0.0.5"
   }
 }

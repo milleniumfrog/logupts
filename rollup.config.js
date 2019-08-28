@@ -20,5 +20,23 @@ export default [
             terser(),
         ],
         context: true,
+    },
+    {
+        input: './dist/loguptssync.js',
+        output: {
+            file: './dist/loguptssync.umd.js',
+            format: 'umd',
+            name: 'logupts',
+            sourcemap: true,
+            globals: {
+                strplace: 'strplace'
+            }
+        },
+        plugins: [
+            resolve(),
+            sourcemaps(),
+            terser(),
+        ],
+        context: true,
     }
 ]
