@@ -105,8 +105,8 @@ export class LogUpTs {
     async error(error: Error | string, ...messages: string[]): Promise<string>;
     async error( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string | Error,...messages: string[]): Promise<string> {
         return this._logService({
-            logLevel: LOGLEVEL.WARN,
-            parentFunctionName: 'warn',
+            logLevel: LOGLEVEL.ERROR,
+            parentFunctionName: 'error',
         }, custom instanceof Error ? {error:custom} : custom , ...messages);
     }
 }

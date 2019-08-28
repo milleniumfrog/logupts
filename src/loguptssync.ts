@@ -128,8 +128,8 @@ export class LogUpTsSync {
     error(error: Error | string, ...messages: string[]): string;
     error( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string | Error,...messages: string[]): string {
         return this._logServiceSync({
-            logLevel: LOGLEVEL.WARN,
-            parentFunctionName: 'warn',
+            logLevel: LOGLEVEL.ERROR,
+            parentFunctionName: 'error',
         }, custom instanceof Error ? {error:custom} : custom , ...messages);
     }
 
