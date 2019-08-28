@@ -1,5 +1,8 @@
-import { ITransportArgs, ITransport, IFormatter, ILogUpTsConfig, CustomArgs, defaultConfig } from './logupts';
+import { CustomArgs } from './logupts';
 import { LOGLEVEL } from './loglevel';
+import { ILogUpTsConfig, defaultConfig } from './loguptsconfig';
+import { ITransportArgs } from './transport';
+import { IFormatter } from './formatter';
 
 export class LogUpTsSync {
 

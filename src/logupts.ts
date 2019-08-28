@@ -1,54 +1,9 @@
 import { LOGLEVEL } from './loglevel';
-import { ConsoleTransport } from './consoletransport';
 import { LogUpTsSync } from './loguptssync';
+import { ILogUpTsConfig } from './loguptsconfig';
+import { IFormatter } from './formatter';
+import { ITransportArgs } from './transport';
 
-
-export interface ITransport {
-    transportSync?: (args: ITransportArgs) => void;
-    transport?: (args: ITransportArgs) => Promise<void>;
-}
-
-
-export interface ITransportArgs {
-    message: string;
-    formattedMessage: string;
-    instanceLogLevel: LOGLEVEL;
-    usedLogLevel: LOGLEVEL;
-    parentFunctionName: string;
-    loguptsConfig: ILogUpTsConfig;
-    error?: Error;
-    customArgs: unknown;
-}
-
-export interface IFormatArgs {
-    message: string;
-    error?: Error;
-    prefix: string;
-    postfix: string;
-    customArgs: unknown;
-    logLevel: LOGLEVEL;
-    parentFunctionName: string;
-}
-
-export interface IFormatter {
-    format(args: IFormatArgs): string;
-}
-
-export interface ILogUpTsConfig {
-    logLevel: LOGLEVEL;
-    prefix: string;
-    postfix: string;
-    transports: ITransport[];
-    formatter: IFormatter
-}
-
-export const defaultConfig: ILogUpTsConfig = {
-    logLevel: LOGLEVEL.WARN,
-    prefix: '{{loglevel}}',
-    postfix: '',
-    transports: [new ConsoleTransport()],
-    formatter: { format: value => value.message }
-};
 
 export type CustomArgs = {
 

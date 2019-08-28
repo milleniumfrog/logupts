@@ -1,5 +1,5 @@
 import { LogUpTsSync } from './loguptssync';
-import { ITransport, ITransportArgs } from './logupts';
+import { ITransport, ITransportArgs } from './transport';
 import * as chai from 'chai';
 import { LOGLEVEL } from './loglevel';
 

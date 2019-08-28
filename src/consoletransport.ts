@@ -1,4 +1,4 @@
-import { ITransport, ITransportArgs } from './logupts';
+import { ITransport, ITransportArgs } from './transport';
 import { LOGLEVEL } from './loglevel';
 import { logLevelMapper } from './utilities';
 

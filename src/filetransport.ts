@@ -1,4 +1,4 @@
-import { ITransport, ITransportArgs } from './logupts';
+import { ITransport, ITransportArgs } from './transport';
 import *  as fs from 'fs';
 import { LOGLEVEL } from './loglevel';
 
