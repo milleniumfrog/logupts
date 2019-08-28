@@ -1,7 +1,5 @@
-import { LogUpTsSync } from './loguptssync';
-import { ITransport, ITransportArgs } from './transport';
+import { LogUpTsSync, ITransport, ITransportArgs, LOGLEVEL } from './loguptssync';
 import * as chai from 'chai';
-import { LOGLEVEL } from './loglevel';
 
 describe('class LogUpTsSync', () => {
     it('ques get initialized, correctly', () => {
