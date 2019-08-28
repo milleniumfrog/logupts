@@ -1,6 +1,5 @@
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import { terser } from 'rollup-plugin-terser';
-import resolve from 'rollup-plugin-node-resolve';
 
 export default [
     {
@@ -10,12 +9,8 @@ export default [
             format: 'umd',
             name: 'logupts',
             sourcemap: true,
-            globals: {
-                strplace: 'strplace'
-            }
         },
         plugins: [
-            resolve(),
             sourcemaps(),
             terser(),
         ],
@@ -27,13 +22,9 @@ export default [
             file: './dist/loguptssync.umd.js',
             format: 'umd',
             name: 'logupts',
-            sourcemap: true,
-            globals: {
-                strplace: 'strplace'
-            }
+            sourcemap: true
         },
         plugins: [
-            resolve(),
             sourcemaps(),
             terser(),
         ],
