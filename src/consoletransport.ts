@@ -4,11 +4,14 @@ import { logLevelMapper } from './utilities';
 
 export class ConsoleTransport implements ITransport {
 
-    constructor(public logLevel?: LOGLEVEL) {}
+    constructor(public logLevel?: LOGLEVEL, public stack: boolean = false) {}
 
-    transportSync(args: ITransportArgs) {
-        if(args.usedLogLevel >= (this.logLevel || args.instanceLogLevel) &&  args.usedLogLevel !== LOGLEVEL.OFF) {
-            console[logLevelMapper(args.usedLogLevel)](args.formattedMessage);
+    transportSync({ usedLogLevel, instanceLogLevel, formattedMessage, error }: ITransportArgs) {
+        if(usedLogLevel >= (this.logLevel || instanceLogLevel) &&  usedLogLevel !== LOGLEVEL.OFF) {
+            if(error)
+                console[logLevelMapper(usedLogLevel)](`${error.message}${this.stack ? `\n ${error.stack}` : ''}`);
+            else
+                console[logLevelMapper(usedLogLevel)](formattedMessage);
         }
     }
 

@@ -48,7 +48,7 @@ export class LogUpTsSync {
     ): ITransportArgs {
         const str = customFormatter.format({
             message: message,
-            error: error,
+            error,
             prefix: customConfig.prefix || this.config.prefix,
             postfix: customConfig.postfix || this.config.postfix,
             logLevel,
@@ -62,6 +62,7 @@ export class LogUpTsSync {
             usedLogLevel: logLevel || this.config.logLevel,
             loguptsConfig: Object.assign({}, this.config, customConfig),
             customArgs,
+            error,
             parentFunctionName,
         }
         for (const transport of this._ques.sync)
