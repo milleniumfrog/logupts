@@ -1,5 +1,6 @@
 import { LogUpTsSync, ITransport, ITransportArgs, LOGLEVEL } from './loguptssync';
 import * as chai from 'chai';
+import { IFormatArgs } from './formatter';
 
 describe('class LogUpTsSync', () => {
     it('ques get initialized, correctly', () => {
@@ -56,5 +57,38 @@ describe('class LogUpTsSync', () => {
         chai.expect(instanceLogLevel).to.eql(LOGLEVEL.WARN);
         chai.expect(parentFunctionName).to.eql('log');
         chai.expect(loguptsConfig).to.be.an('object');
-    })
+    });
+
+    it('log an error', () => {
+        const demo = new LogUpTsSync({logLevel: LOGLEVEL.OFF});
+        chai.expect(demo.error(new Error('this is an error'))).to.eql('this is an error');
+        chai.expect(demo.error('this is an error')).to.eql('this is an error');
+        chai.expect(demo.error({error: new Error('this is an error'),
+            config: {
+                prefix: 'ERROR',
+            },
+            formatter: {
+                format({prefix, parentFunctionName}: IFormatArgs) {
+                    return `${prefix} + ${parentFunctionName}`;
+                }
+            }
+        })).to.eql('ERROR + error');
+    });
+    it('log a warning', () => {
+        const demo = new LogUpTsSync({logLevel: LOGLEVEL.OFF});
+        chai.expect(demo.warn('this is a warning')).to.eql('this is a warning');
+    });
+    it('log an info', () => {
+        const demo = new LogUpTsSync({logLevel: LOGLEVEL.OFF});
+        chai.expect(demo.info('this is an info')).to.eql('this is an info');
+        chai.expect(demo.log('this is an info')).to.eql('this is an info');
+    });
+    it('log an trace', () =>  {
+        const demo = new LogUpTsSync({logLevel: LOGLEVEL.OFF});
+        chai.expect(demo.trace('test is a trace')).to.eql('test is a trace');
+    });
+    it('log an debug', () =>  {
+        const demo = new LogUpTsSync({logLevel: LOGLEVEL.OFF});
+        chai.expect(demo.debug('test is a debug')).to.eql('test is a debug');
+    });
 })  
