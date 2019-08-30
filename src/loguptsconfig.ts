@@ -18,5 +18,5 @@ export const defaultConfig: ILogUpTsConfig = {
     prefix: '{{loglevel}}',
     postfix: '',
     transports: [new ConsoleTransport()],
-    formatter: { format: value => value.message }
+    formatter: { format: value => value.message || (value.error || {message: ''}).message }
 };
