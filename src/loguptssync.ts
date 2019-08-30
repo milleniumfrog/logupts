@@ -9,6 +9,13 @@ export { ITransportArgs, ITransport } from './transport';
 export { IFormatter, IFormatArgs } from './formatter';
 export { ILogUpTsConfig, defaultConfig } from './loguptsconfig';
 
+interface ILogServiceArgs {
+    args?: unknown;
+    config?: Partial<Omit<ILogUpTsConfig, "formatter">>;
+    formatter?: IFormatter;
+    error?: Error
+}
+
 export class LogUpTsSync {
 
     static defaultConfig: ILogUpTsConfig
@@ -46,7 +53,7 @@ export class LogUpTsSync {
             parentFunctionName = 'log'
         }: CustomArgs = {}
     ): ITransportArgs {
-        const str = customFormatter.format({
+        const str = (customFormatter.format)({
             message: message,
             error,
             prefix: customConfig.prefix || this.config.prefix,
@@ -70,7 +77,7 @@ export class LogUpTsSync {
         return transportArgs;
     }
     _logServiceSync(logServiceArgs: {parentFunctionName: string, logLevel: LOGLEVEL},
-        custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string,  
+        custom: ILogServiceArgs | string,  
         ...messages: string[]): string 
     {
         if (typeof custom === 'string') 
@@ -87,7 +94,8 @@ export class LogUpTsSync {
     };
 
     log(...messages: string[]): string;
-    log( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): string {
+    log( custom: ILogServiceArgs, ...messages: string[]): string;
+    log( custom: ILogServiceArgs| string, ...messages: string[]): string {
         return this._logServiceSync({
             logLevel: LOGLEVEL.INFO,
             parentFunctionName: 'log',
@@ -95,15 +103,17 @@ export class LogUpTsSync {
     }
 
     info(...messages: string[]): string;
-    info( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): string {
+    info( custom: ILogServiceArgs, ...messages: string[]): string;
+    info( custom: ILogServiceArgs | string, ...messages: string[]): string {
         return this._logServiceSync({
             logLevel: LOGLEVEL.INFO,
-            parentFunctionName: 'log',
+            parentFunctionName: 'info',
         }, custom, ...messages);
     }
 
     debug(...messages: string[]): string;
-    debug( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): string {
+    debug( custom: ILogServiceArgs, ...messages: string[]): string;
+    debug( custom: ILogServiceArgs | string, ...messages: string[]): string {
         return this._logServiceSync({
             logLevel: LOGLEVEL.DEBUG,
             parentFunctionName: 'debug',
@@ -111,7 +121,8 @@ export class LogUpTsSync {
     }
 
     trace(...messages: string[]): string;
-    trace( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): string {
+    trace( custom: ILogServiceArgs, ...messages: string[]): string;
+    trace( custom: ILogServiceArgs | string, ...messages: string[]): string {
         return this._logServiceSync({
             logLevel: LOGLEVEL.TRACE,
             parentFunctionName: 'trace',
@@ -119,7 +130,8 @@ export class LogUpTsSync {
     }
 
     warn(...messages: string[]): string;
-    warn( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string, ...messages: string[]): string {
+    warn( custom: ILogServiceArgs, ...messages: string[]): string;
+    warn( custom: ILogServiceArgs | string, ...messages: string[]): string {
         return this._logServiceSync({
             logLevel: LOGLEVEL.WARN,
             parentFunctionName: 'warn',
@@ -127,7 +139,8 @@ export class LogUpTsSync {
     }
 
     error(error: Error | string, ...messages: string[]): string;
-    error( custom: {args?: unknown, config?: ILogUpTsConfig, formatter?: IFormatter, error?: Error} | string | Error,...messages: string[]): string {
+    error( custom: ILogServiceArgs ,...messages: string[]): string;
+    error( custom: ILogServiceArgs | string | Error,...messages: string[]): string {
         return this._logServiceSync({
             logLevel: LOGLEVEL.ERROR,
             parentFunctionName: 'error',
