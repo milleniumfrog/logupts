@@ -8,7 +8,7 @@ export class ConsoleTransport implements ITransport {
 
     transportSync({ usedLogLevel, instanceLogLevel, formattedMessage, error }: ITransportArgs) {
         if(usedLogLevel >= (this.logLevel || instanceLogLevel) &&  usedLogLevel !== LOGLEVEL.OFF) {
-            if(error)
+            if (error)
                 console[logLevelMapper(usedLogLevel)](`${error.message}${this.stack ? `\n ${error.stack}` : ''}`);
             else
                 console[logLevelMapper(usedLogLevel)](formattedMessage);
