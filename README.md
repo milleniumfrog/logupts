@@ -1,5 +1,7 @@
 # LogUpTs v3.0.x
 
+### Moved to gitlab https://gitlab.com/milleniumfrog/logupts
+
 [![](https://data.jsdelivr.com/v1/package/npm/logupts/badge)](https://www.jsdelivr.com/package/npm/logupts)
 
 LogUpTs is an easy extendable Logging Library for the browser and nodejs.
